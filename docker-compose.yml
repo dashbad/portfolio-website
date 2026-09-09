@@ -1,32 +1,22 @@
 services:
-  web:
+  portfolio:
     build:
-      context: .
+      context: ${DOCKER_DIR}/portfolio
       dockerfile: Dockerfile
     image: dashbad-portfolio:latest
     container_name: dashbad-portfolio
     restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      # Heavy media lives on the host and is mounted read-only at runtime.
-      # It is never part of the image (see .dockerignore).
-      - ./host-media:/usr/share/caddy/media:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashbad-portfolio.rule=Host(`dashbad.com`) || Host(`www.dashbad.com`)"
-      - "traefik.http.routers.dashbad-portfolio.entrypoints=websecure"
-      - "traefik.http.routers.dashbad-portfolio.tls=true"
-      - "traefik.http.services.dashbad-portfolio.loadbalancer.server.port=80"
-      - "traefik.http.middlewares.dashbad-portfolio-sec.headers.stsSeconds=31536000"
-      - "traefik.http.routers.dashbad-portfolio.middlewares=dashbad-portfolio-sec"
     networks:
       - traefik
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+    volumes:
+      # Mount the media folder from your host
+      - ${DOCKER_DIR}/portfolio/host-media:/usr/share/caddy/media:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portfolio.rule=Host(`dashbad.com`) || Host(`www.dashbad.com`)"
+      - "traefik.http.routers.portfolio.entrypoints=websecure"
+      - "traefik.http.routers.portfolio.tls=true"
+      - "traefik.http.services.portfolio.loadbalancer.server.port=80"
 
 networks:
   traefik:
