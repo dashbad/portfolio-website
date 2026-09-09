@@ -12,8 +12,21 @@ services:
       # Heavy media lives on the host and is mounted read-only at runtime.
       # It is never part of the image (see .dockerignore).
       - ./host-media:/usr/share/caddy/media:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashbad-portfolio.rule=Host(`dashbad.example`)"
+      - "traefik.http.routers.dashbad-portfolio.entrypoints=websecure"
+      - "traefik.http.routers.dashbad-portfolio.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.dashbad-portfolio-sec.headers.stsSeconds=31536000"
+      - "traefik.http.routers.dashbad-portfolio.middlewares=dashbad-portfolio-sec"
+    networks:
+      - traefik_proxy
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3
+
+networks:
+  traefik_proxy:
+    external: true

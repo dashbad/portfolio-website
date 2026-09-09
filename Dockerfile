@@ -4,7 +4,7 @@
 # Build stage — compile the Astro static site.
 # Astro 7 requires Node >= 22.12, so node:22-alpine is used rather than Node 20.
 # ---------------------------------------------------------------------------
-FROM node:22-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -21,10 +21,16 @@ RUN npm run build
 # ---------------------------------------------------------------------------
 FROM caddy:2-alpine
 
-COPY Caddyfile /etc/caddy/Caddyfile
-COPY --from=build /app/dist /usr/share/caddy
+# Run unprivileged
+RUN addgroup -S caddy && adduser -S caddy -G caddy \
+    && apk add --no-cache libcap \
+    && setcap cap_net_bind_service=+ep /usr/bin/caddy \
+    && mkdir -p /usr/share/caddy/media \
+    && chown -R caddy:caddy /usr/share/caddy /config /data /etc/caddy
 
-# Mount point for host media (bind-mounted at runtime, never baked in).
-RUN mkdir -p /usr/share/caddy/media
+USER caddy
+
+COPY --chown=caddy:caddy Caddyfile /etc/caddy/Caddyfile
+COPY --from=build --chown=caddy:caddy /app/dist /usr/share/caddy
 
 EXPOSE 80

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Portfolio of Dashiell Badcock — interactive media artist, physical computing designer and electronic musician.",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "astro dev",
