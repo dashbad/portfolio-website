@@ -1,0 +1,49 @@
+{
+  "$schema": "https://frontmatter.codes/config/taxonomy.contenttypes.schema.json",
+  "name": "art",
+  "fileType": "mdx",
+  "pageBundle": false,
+  "previewPath": "art",
+  "fields": [
+    { "title": "Title", "name": "title", "type": "string", "single": true, "required": true },
+    {
+      "title": "Category",
+      "name": "category",
+      "type": "taxonomy",
+      "taxonomyId": "category",
+      "singleValueAsString": true,
+      "required": true
+    },
+    {
+      "title": "Year",
+      "name": "year",
+      "type": "number",
+      "numberOptions": { "min": 1990, "max": 2100, "step": 1, "isDecimal": false },
+      "required": true
+    },
+    { "title": "Summary", "name": "summary", "type": "string", "single": false },
+    {
+      "title": "Hero video (silent loop)",
+      "name": "heroVideo",
+      "type": "file",
+      "fileExtensions": ["mp4", "webm", "mov"],
+      "required": true
+    },
+    { "title": "Hero poster", "name": "heroPoster", "type": "image", "isPreviewImage": true, "required": true },
+    {
+      "title": "Specifications",
+      "name": "specs",
+      "type": "fields",
+      "fields": [
+        { "title": "Dimensions", "name": "dimensions", "type": "string", "single": true },
+        { "title": "Controller", "name": "controller", "type": "string", "single": true },
+        { "title": "Power", "name": "power", "type": "string", "single": true },
+        { "title": "Illumination", "name": "illumination", "type": "string", "single": true },
+        { "title": "Materials", "name": "materials", "type": "list" }
+      ]
+    },
+    { "title": "Fabrication gallery", "name": "gallery", "type": "block", "fieldGroup": ["galleryImage"] },
+    { "title": "Sort order", "name": "order", "type": "number", "numberOptions": { "min": 0, "step": 1, "isDecimal": false } },
+    { "title": "Draft", "name": "draft", "type": "draft" }
+  ]
+}

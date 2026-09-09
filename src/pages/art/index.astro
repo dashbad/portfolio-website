@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { getPublishedArt } from '../../lib/content';
+
+const works = await getPublishedArt();
+---
+
+<BaseLayout title="Art">
+  <section class="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16" aria-label="Works">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {works.map((work, i) => <WorkCard work={work} eager={i < 3} />)}
+    </div>
+  </section>
+</BaseLayout>

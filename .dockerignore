@@ -1,0 +1,26 @@
+# Dependencies & build output (rebuilt inside the image)
+node_modules
+dist
+.astro
+
+# VCS / editor / CMS metadata
+.git
+.gitignore
+.vscode
+.frontmatter
+
+# Heavy media — served from an external volume mount, never baked into the image
+host-media
+public/media
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+.env
+.env.*
+*.log
+.DS_Store
+README.md

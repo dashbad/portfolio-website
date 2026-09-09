@@ -1,0 +1,81 @@
+---
+/**
+ * SoundCloudPlayer — renders a SoundCloud embed from the raw <iframe> string
+ * stored in the `music` collection.
+ *
+ * Safety: the string is never injected as raw HTML. The first <iframe> in the
+ * pasted code is located (SoundCloud appends an attribution <div>, which is
+ * ignored), its `src` must point at https://w.soundcloud.com/player/, and a
+ * fresh <iframe> is rendered by Astro with the player colour forced to Neon
+ * Cyan. Anything else falls back to a plain link.
+ */
+interface Props {
+  embed: string;
+  title: string;
+  /** Shown if the embed string is rejected. */
+  fallbackUrl?: string;
+  class?: string;
+}
+
+const { embed, title, fallbackUrl, class: className } = Astro.props;
+
+const ALLOWED_ORIGIN = 'https://w.soundcloud.com';
+const ALLOWED_PATH = '/player/';
+
+function parseEmbed(html: string): { src: string; height: number } | null {
+  const iframe = html.match(/<iframe\b[^>]*>\s*<\/iframe>/i)?.[0];
+  if (!iframe) return null;
+
+  const src = iframe.match(/\ssrc\s*=\s*["']([^"']+)["']/i)?.[1];
+  if (!src) return null;
+
+  let url: URL;
+  try {
+    url = new URL(src);
+  } catch {
+    return null;
+  }
+  if (url.origin !== ALLOWED_ORIGIN || !url.pathname.startsWith(ALLOWED_PATH)) return null;
+
+  url.searchParams.set('color', '#00ffff');
+
+  const rawHeight = Number(iframe.match(/\sheight\s*=\s*["']?(\d+)/i)?.[1] ?? 166);
+  const height = Math.min(Math.max(rawHeight || 166, 100), 600);
+
+  return { src: url.toString(), height };
+}
+
+const parsed = parseEmbed(embed);
+---
+
+{
+  parsed ? (
+    <div
+      class:list={[
+        'sc-player overflow-hidden rounded-lg border border-line bg-charcoal p-3 transition-[border-color,box-shadow] duration-300 hover:border-neon/50 sm:p-4',
+        className,
+      ]}
+    >
+      <iframe
+        title={`SoundCloud player: ${title}`}
+        src={parsed.src}
+        width="100%"
+        height={parsed.height}
+        allow="autoplay; encrypted-media"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        class="block w-full overflow-hidden rounded-md border-0 bg-void"
+        style="border: 0; overflow: hidden;"
+      />
+    </div>
+  ) : (
+    <div class:list={['rounded-lg border border-dashed border-line bg-charcoal p-5 font-mono text-xs text-silver', className]}>
+      <p class="text-white">Embed rejected — expected a single SoundCloud player &lt;iframe&gt;.</p>
+      {fallbackUrl && (
+        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-neon hover:underline">
+          Listen on SoundCloud ↗
+        </a>
+      )}
+    </div>
+  )
+}

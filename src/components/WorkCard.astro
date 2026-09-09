@@ -1,0 +1,53 @@
+---
+/**
+ * WorkCard — poster thumbnail card linking to an `art` entry.
+ */
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  work: CollectionEntry<'art'>;
+  eager?: boolean;
+  class?: string;
+}
+
+const { work, eager = false, class: className } = Astro.props;
+const { title, category, year, heroPoster } = work.data;
+---
+
+<a
+  href={`/art/${work.id}/`}
+  class:list={[
+    'work-card group relative block overflow-hidden rounded-lg border border-line bg-charcoal transition-[border-color,box-shadow] duration-300 hover:border-neon/70 hover:shadow-neon',
+    className,
+  ]}
+  data-work-card
+>
+  <div class="media-frame relative aspect-[4/3] overflow-hidden">
+    <div class="media-fallback" aria-hidden="true">
+      <span class="mono-label">Poster offline</span>
+    </div>
+    <img
+      src={heroPoster}
+      alt={`${title} — ${category}`}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      class="absolute inset-0 z-10 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+    />
+  </div>
+
+  <div class="flex items-start justify-between gap-4 p-4">
+    <div class="min-w-0">
+      <h3 class="text-lg text-white transition-colors group-hover:text-neon">{title}</h3>
+    </div>
+    <span class="shrink-0 font-mono text-xs text-silver/60">{year}</span>
+  </div>
+</a>
+
+<script>
+  document.querySelectorAll<HTMLImageElement>('[data-work-card] img').forEach((img) => {
+    const card = img.closest('[data-work-card]');
+    const miss = () => card?.classList.add('is-missing');
+    img.addEventListener('error', miss, { once: true });
+    if (img.complete && img.naturalWidth === 0 && img.src) miss();
+  });
+</script>

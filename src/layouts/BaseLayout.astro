@@ -1,0 +1,51 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Absolute or root-relative path used for Open Graph previews. */
+  image?: string;
+}
+
+const SITE_NAME = 'Dashiell Badcock';
+const DEFAULT_DESCRIPTION =
+  'Dashiell Badcock — interactive media artist, physical computing designer and electronic musician. Kinetic light, embedded systems and sound.';
+
+const { title, description = DEFAULT_DESCRIPTION, image } = Astro.props;
+const pageTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — Interactive Media · Physical Computing · Music`;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const ogImage = image && Astro.site ? new URL(image, Astro.site).toString() : image;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0a0a0c" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+  </head>
+  <body class="flex min-h-screen flex-col bg-void text-silver">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

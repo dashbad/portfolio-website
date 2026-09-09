@@ -1,0 +1,76 @@
+---
+title: "Geodesic Dome"
+category: "Installation"
+year: 2023
+order: 4
+summary: "A 2V geodesic dome with every strut lit — a walk-in wireframe of light that responds to the people inside it."
+heroVideo: "/media/art/geodesic-dome/hero-loop.mp4"
+heroPoster: "/media/art/geodesic-dome/poster.jpg"
+specs:
+  dimensions: "Ø 5000 × 2500 mm, 2V frequency"
+  controller: "3 × ESP32 nodes, synced over ESP-NOW, master on Art-Net"
+  power: "12 V DC · 3 × 30 A supplies · 2 kW peak"
+  illumination: "65 struts × 60 LED/m WS2815, ~4,500 LEDs"
+  materials:
+    - "Aluminium tube struts"
+    - "3D-printed hub connectors"
+    - "Opal polycarbonate strut sleeves"
+    - "Ground-anchored steel base ring"
+gallery:
+  - src: "/media/art/geodesic-dome/bench-01.jpg"
+    alt: "Batch of 3D-printed hub connectors"
+    caption: "Hub connectors, batch print"
+  - src: "/media/art/geodesic-dome/bench-02.jpg"
+    alt: "Strut assembly with LED and diffuser sleeve"
+    caption: "Strut sub-assembly"
+  - src: "/media/art/geodesic-dome/bench-03.jpg"
+    alt: "Dome partially raised at dusk"
+    caption: "Raising the dome"
+---
+import Gallery from '../../components/Gallery.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+
+## Overview
+
+*Placeholder copy — replace with the project narrative.*
+
+Geodesic Dome is a five-metre walk-in structure whose every strut is a diffused LED bar.
+Ultrasonic sensors at each hub track people moving through the space and send ripples of
+light out across the shell.
+
+## Concept
+
+An inhabitable circuit diagram. The dome's own geometry — struts as edges, hubs as nodes —
+becomes the topology for the light simulation, so animations propagate along real physical
+paths.
+
+## 3D design
+
+<Gallery
+  columns={2}
+  images={[
+    { src: '/media/art/geodesic-dome/cad-dome.png', alt: 'CAD render of the 2V dome with strut lengths colour-coded', caption: '2V dome — strut families A / B' },
+    { src: '/media/art/geodesic-dome/cad-hub.png', alt: 'Printed hub connector with cable pass-through', caption: 'Hub connector' },
+  ]}
+/>
+
+## Electronics & control
+
+| Node   | Struts | LEDs  | Sensors |
+| ------ | ------ | ----- | ------- |
+| North  | 22     | 1,540 | 4       |
+| South  | 22     | 1,540 | 4       |
+| Crown  | 21     | 1,470 | 2       |
+
+Nodes keep a shared clock over ESP-NOW so that patterns spanning multiple nodes stay in
+phase. Strut sleeves are opal polycarbonate tube, which gives an even glow without hotspots.
+
+## Showcase
+
+<VideoPlayer
+  mode="showcase"
+  src="/media/art/geodesic-dome/showcase.mp4"
+  poster="/media/art/geodesic-dome/poster.jpg"
+  title="Geodesic Dome — showcase"
+  caption="Geodesic Dome — night walkthrough, 2023"
+/>

@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SoundCloudPlayer from '../../components/SoundCloudPlayer.astro';
+import { getPublishedMusic } from '../../lib/content';
+
+const tracks = await getPublishedMusic();
+---
+
+<BaseLayout title="Music">
+  <section class="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16" aria-label="Tracks">
+    <ul class="space-y-12">
+      {
+        tracks.map((track) => (
+          <li>
+            <h2 class="mb-4 text-2xl sm:text-3xl">{track.data.title}</h2>
+            <SoundCloudPlayer embed={track.data.soundcloudEmbedIframe} title={track.data.title} fallbackUrl={track.data.soundcloudUrl} />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

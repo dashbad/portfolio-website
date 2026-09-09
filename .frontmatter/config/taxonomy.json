@@ -1,0 +1,30 @@
+{
+  "$schema": "https://frontmatter.codes/frontmatter.schema.json",
+
+  "frontMatter.taxonomy.customTaxonomy": [
+    {
+      "id": "category",
+      "options": [
+        "Kinetic Lighting",
+        "Light Sculpture",
+        "Installation",
+        "Interactive",
+        "Wearable",
+        "Performance",
+        "Research"
+      ]
+    }
+  ],
+
+  "frontMatter.taxonomy.fieldGroups": [
+    {
+      "id": "galleryImage",
+      "labelField": "caption",
+      "fields": [
+        { "title": "Image", "name": "src", "type": "image", "isPreviewImage": true },
+        { "title": "Alt text", "name": "alt", "type": "string", "single": true },
+        { "title": "Caption", "name": "caption", "type": "string", "single": true }
+      ]
+    }
+  ]
+}

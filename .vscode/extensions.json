@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "eliostruyf.vscode-front-matter",
+    "astro-build.astro-vscode",
+    "bradlc.vscode-tailwindcss",
+    "unifiedjs.vscode-mdx",
+    "matthewpi.caddyfile-support",
+    "ms-azuretools.vscode-docker"
+  ]
+}

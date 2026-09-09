@@ -1,0 +1,80 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+import SpecsTable from '../../components/SpecsTable.astro';
+import Gallery from '../../components/Gallery.astro';
+import { getPublishedArt } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const works = await getPublishedArt();
+  return works.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, prev: works[i - 1] ?? null, next: works[i + 1] ?? null },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+const { title, category, year, summary, heroVideo, heroPoster, specs, gallery } = entry.data;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={title} description={summary} image={heroPoster}>
+  <article class="mx-auto max-w-6xl px-5 pt-8 sm:px-8">
+    <a href="/art" class="mono-label inline-flex items-center gap-2 text-silver transition-colors hover:text-neon">
+      <span aria-hidden="true">←</span> All work
+    </a>
+
+    <VideoPlayer src={heroVideo} poster={heroPoster} mode="ambient" title={`${title} — ambient loop`} aspect="21 / 9" class="mt-6" />
+
+    <header class="mt-10 max-w-3xl">
+      <p class="mono-label flex items-center gap-3 text-neon">
+        <span>{category}</span>
+        <span class="text-silver/40" aria-hidden="true">/</span>
+        <span class="text-silver">{year}</span>
+      </p>
+      <h1 class="mt-3 text-4xl sm:text-6xl">{title}</h1>
+      {summary && <p class="mt-6 text-lg leading-relaxed text-silver">{summary}</p>}
+    </header>
+
+    <div class="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div class="mdx max-w-3xl">
+        <Content />
+      </div>
+      <div class="self-start lg:sticky lg:top-24">
+        <SpecsTable specs={specs} />
+      </div>
+    </div>
+
+    {
+      gallery.length > 0 && (
+        <section class="mt-20 border-t border-line pt-12" aria-labelledby="fab-log">
+          <p class="mono-label text-neon">Bench</p>
+          <h2 id="fab-log" class="mt-2 text-3xl">Fabrication log</h2>
+          <Gallery images={gallery} columns={3} class="mt-8" />
+        </section>
+      )
+    }
+
+    <nav class="mt-20 grid gap-4 border-t border-line pt-8 sm:grid-cols-2" aria-label="Adjacent works">
+      {
+        prev ? (
+          <a href={`/art/${prev.id}/`} class="group rounded-lg border border-line bg-charcoal p-5 transition-colors hover:border-neon/70">
+            <span class="mono-label text-silver/60">← Previous</span>
+            <span class="mt-2 block text-lg text-white group-hover:text-neon">{prev.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next && (
+          <a href={`/art/${next.id}/`} class="group rounded-lg border border-line bg-charcoal p-5 text-right transition-colors hover:border-neon/70">
+            <span class="mono-label text-silver/60">Next →</span>
+            <span class="mt-2 block text-lg text-white group-hover:text-neon">{next.data.title}</span>
+          </a>
+        )
+      }
+    </nav>
+  </article>
+</BaseLayout>

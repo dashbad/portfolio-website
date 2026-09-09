@@ -1,0 +1,76 @@
+---
+title: "Fibre Triangles"
+category: "Installation"
+year: 2024
+order: 3
+summary: "Side-emitting fibre optic strands stretched across a triangulated steel frame, lit edge-on so the whole lattice hums with colour."
+heroVideo: "/media/art/fibre-triangles/hero-loop.mp4"
+heroPoster: "/media/art/fibre-triangles/poster.jpg"
+specs:
+  dimensions: "3000 × 2400 × 400 mm, free-standing"
+  controller: "Raspberry Pi 4 + custom driver HAT, sACN"
+  power: "24 V DC · 15 A"
+  illumination: "36 × high-power RGBW LED fibre illuminators, 3 mm side-glow fibre"
+  materials:
+    - "Welded 25 mm steel box section"
+    - "3 mm side-emitting PMMA fibre"
+    - "Machined aluminium fibre couplers"
+    - "Powder-coated matte black"
+gallery:
+  - src: "/media/art/fibre-triangles/bench-01.jpg"
+    alt: "Machining aluminium fibre couplers on the lathe"
+    caption: "Fibre couplers"
+  - src: "/media/art/fibre-triangles/bench-02.jpg"
+    alt: "Stringing fibre across the steel frame"
+    caption: "Stringing the lattice"
+  - src: "/media/art/fibre-triangles/bench-03.jpg"
+    alt: "Illuminator test showing a single lit triangle"
+    caption: "Single-triangle test"
+---
+import Gallery from '../../components/Gallery.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+
+## Overview
+
+*Placeholder copy — replace with the project narrative.*
+
+Fibre Triangles is a free-standing lattice of thirty-six triangles, each edge a bundle of
+side-glow fibre coupled to its own RGBW illuminator. Because each triangle is individually
+addressable the piece can render slow geometric animations across the whole structure.
+
+## Concept
+
+A study in **structure as pixel**: the lighting resolution is the frame itself. Patterns are
+generated from the adjacency graph of the triangles rather than a pixel grid.
+
+## 3D design
+
+<Gallery
+  columns={2}
+  images={[
+    { src: '/media/art/fibre-triangles/cad-frame.png', alt: 'CAD render of the welded steel frame', caption: 'Frame — welded steel' },
+    { src: '/media/art/fibre-triangles/cad-coupler.png', alt: 'Detail render of the machined fibre coupler', caption: 'Coupler detail' },
+  ]}
+/>
+
+## Electronics & control
+
+The driver HAT provides 36 constant-current RGBW channels over SPI. Patterns are authored
+in TouchDesigner and streamed as sACN, with a standalone Python fallback that runs on boot.
+
+```python
+# Adjacency-driven fade (excerpt)
+for tri in triangles:
+    energy = sum(state[n] for n in tri.neighbours) / len(tri.neighbours)
+    state[tri.id] = lerp(state[tri.id], energy, 0.08)
+```
+
+## Showcase
+
+<VideoPlayer
+  mode="showcase"
+  src="/media/art/fibre-triangles/showcase.mp4"
+  poster="/media/art/fibre-triangles/poster.jpg"
+  title="Fibre Triangles — showcase"
+  caption="Fibre Triangles — gallery install, 2024"
+/>

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://frontmatter.codes/config/taxonomy.contenttypes.schema.json",
+  "name": "music",
+  "fileType": "mdx",
+  "pageBundle": false,
+  "fields": [
+    { "title": "Title", "name": "title", "type": "string", "single": true, "required": true },
+    { "title": "Year", "name": "year", "type": "number", "numberOptions": { "min": 1990, "max": 2100, "step": 1, "isDecimal": false } },
+    { "title": "Description", "name": "description", "type": "string", "single": false, "required": true },
+    { "title": "SoundCloud URL", "name": "soundcloudUrl", "type": "string", "single": true, "required": true },
+    {
+      "title": "SoundCloud embed <iframe> (Share → Embed → copy code)",
+      "name": "soundcloudEmbedIframe",
+      "type": "string",
+      "single": false,
+      "required": true
+    },
+    { "title": "Sort order", "name": "order", "type": "number", "numberOptions": { "min": 0, "step": 1, "isDecimal": false } },
+    { "title": "Draft", "name": "draft", "type": "draft" }
+  ]
+}

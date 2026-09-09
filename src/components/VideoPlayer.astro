@@ -1,0 +1,288 @@
+---
+/**
+ * VideoPlayer — responsive HTML5 video wrapper.
+ *
+ *  mode="ambient"  → silent, autoplaying, looping hero loop. No controls.
+ *  mode="showcase" → full video with custom Neon Cyan controls
+ *                    (play/pause, seek, time, mute, fullscreen, keyboard).
+ *
+ * `src`/`poster` are `/media/...` paths served from the external media mount.
+ * If the file is not mounted, a styled "media offline" placeholder is shown.
+ */
+interface Props {
+  src: string;
+  poster?: string;
+  mode?: 'ambient' | 'showcase';
+  title?: string;
+  caption?: string;
+  /** CSS aspect-ratio value, e.g. "16 / 9" or "21 / 9". */
+  aspect?: string;
+  class?: string;
+}
+
+const {
+  src,
+  poster,
+  mode = 'ambient',
+  title = 'Video',
+  caption,
+  aspect = '16 / 9',
+  class: className,
+} = Astro.props;
+
+const ambient = mode === 'ambient';
+const videoAttrs = ambient
+  ? { autoplay: true, muted: true, loop: true, 'aria-hidden': true, tabindex: -1 }
+  : { 'aria-label': title };
+---
+
+<figure
+  class:list={[
+    'video-player group relative isolate overflow-hidden rounded-lg border border-line bg-charcoal',
+    className,
+  ]}
+  data-video-player
+  data-mode={mode}
+  data-poster={poster}
+  tabindex={ambient ? undefined : 0}
+>
+  <div class="media-frame relative w-full" style={`aspect-ratio: ${aspect};`}>
+    <div class="media-fallback" aria-hidden="true">
+      <span class="mono-label">Media offline</span>
+      <span class="max-w-full truncate font-mono text-[10px] text-silver/50">{src}</span>
+    </div>
+
+    <video
+      class="absolute inset-0 z-10 h-full w-full object-cover"
+      src={src}
+      poster={poster}
+      preload={ambient ? 'metadata' : 'none'}
+      playsinline
+      disablepictureinpicture
+      {...videoAttrs}
+    ></video>
+
+    {
+      !ambient && (
+        <>
+          <button
+            type="button"
+            class="vp-bigplay absolute inset-0 z-20 flex items-center justify-center bg-void/30 transition-opacity duration-300"
+            data-vp="bigplay"
+            aria-label={`Play ${title}`}
+          >
+            <span class="flex h-16 w-16 items-center justify-center rounded-full border border-neon bg-void/70 text-neon shadow-neon transition-transform duration-300 group-hover:scale-110">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+
+          <div
+            class="vp-controls absolute inset-x-0 bottom-0 z-30 flex items-center gap-3 bg-gradient-to-t from-void/95 via-void/70 to-transparent px-3 pb-3 pt-8 font-mono text-[11px] text-white"
+            data-vp="controls"
+          >
+            <button type="button" class="vp-btn" data-vp="toggle" aria-label="Play">
+              <svg class="vp-icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+              <svg class="vp-icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z" /></svg>
+            </button>
+
+            <span class="tabular-nums text-silver" data-vp="time">0:00 / 0:00</span>
+
+            <input
+              type="range"
+              class="vp-seek flex-1"
+              min="0"
+              max="1000"
+              step="1"
+              value="0"
+              aria-label="Seek"
+              data-vp="seek"
+            />
+
+            <button type="button" class="vp-btn" data-vp="mute" aria-label="Mute">
+              <svg class="vp-icon-sound" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z" /></svg>
+              <svg class="vp-icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 12a4.5 4.5 0 0 0-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12a9 9 0 0 0-7-8.77v2.06A7 7 0 0 1 19 12zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25a7 7 0 0 1-2.25 1.23v2.06a9 9 0 0 0 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z" /></svg>
+            </button>
+
+            <button type="button" class="vp-btn" data-vp="fs" aria-label="Fullscreen">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" /></svg>
+            </button>
+          </div>
+        </>
+      )
+    }
+  </div>
+
+  {caption && <figcaption class="border-t border-line px-4 py-2.5 font-mono text-[11px] text-silver">{caption}</figcaption>}
+</figure>
+
+<style>
+  .vp-controls {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .video-player:hover .vp-controls,
+  .video-player:focus-within .vp-controls,
+  .video-player:not(.is-playing) .vp-controls {
+    opacity: 1;
+  }
+  .video-player.is-playing .vp-bigplay {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .vp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 0.25rem;
+    color: #ffffff;
+    transition: color 150ms, background-color 150ms;
+  }
+  .vp-btn:hover { color: var(--color-neon); background: rgb(0 255 255 / 0.08); }
+  .vp-icon-pause, .vp-icon-muted { display: none; }
+  .is-playing .vp-icon-play { display: none; }
+  .is-playing .vp-icon-pause { display: block; }
+  .is-muted .vp-icon-sound { display: none; }
+  .is-muted .vp-icon-muted { display: block; }
+
+  /* Neon seek bar */
+  .vp-seek {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-neon) 0%,
+      var(--color-neon) var(--vp-progress, 0%),
+      rgb(255 255 255 / 0.2) var(--vp-progress, 0%),
+      rgb(255 255 255 / 0.2) 100%
+    );
+    border-radius: 9999px;
+    cursor: pointer;
+    outline-offset: 6px;
+  }
+  .vp-seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    background: var(--color-neon);
+    box-shadow: var(--shadow-neon-sm);
+    transition: transform 150ms;
+  }
+  .vp-seek::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--color-neon);
+    box-shadow: var(--shadow-neon-sm);
+  }
+  .vp-seek:hover::-webkit-slider-thumb { transform: scale(1.3); }
+  .video-player:fullscreen { border: 0; border-radius: 0; background: #000; }
+  .video-player:fullscreen .media-frame { height: 100vh; aspect-ratio: auto; }
+</style>
+
+<script>
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const r = Math.floor(s % 60);
+    return `${m}:${r.toString().padStart(2, '0')}`;
+  };
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function markMissing(root: HTMLElement, video: HTMLVideoElement) {
+    // If a poster exists we keep showing it; otherwise reveal the placeholder.
+    const poster = root.dataset.poster;
+    if (!poster) return root.classList.add('is-missing');
+    const probe = new Image();
+    probe.onerror = () => root.classList.add('is-missing');
+    probe.onload = () => video.classList.add('has-poster');
+    probe.src = poster;
+  }
+
+  function initPlayer(root: HTMLElement) {
+    const video = root.querySelector<HTMLVideoElement>('video');
+    if (!video) return;
+
+    video.addEventListener('error', () => markMissing(root, video), { once: true });
+
+    if (root.dataset.mode === 'ambient') {
+      if (reduceMotion) {
+        video.removeAttribute('autoplay');
+        video.pause();
+      } else {
+        video.play().catch(() => {});
+      }
+      return;
+    }
+
+    const q = <T extends HTMLElement>(name: string) => root.querySelector<T>(`[data-vp="${name}"]`);
+    const toggle = q<HTMLButtonElement>('toggle');
+    const bigplay = q<HTMLButtonElement>('bigplay');
+    const time = q<HTMLElement>('time');
+    const seek = q<HTMLInputElement>('seek');
+    const mute = q<HTMLButtonElement>('mute');
+    const fs = q<HTMLButtonElement>('fs');
+
+    const setPlaying = (playing: boolean) => {
+      root.classList.toggle('is-playing', playing);
+      toggle?.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    };
+    const playPause = () => {
+      if (video.paused) video.play().catch(() => {});
+      else video.pause();
+    };
+
+    toggle?.addEventListener('click', playPause);
+    bigplay?.addEventListener('click', playPause);
+    video.addEventListener('click', playPause);
+    video.addEventListener('play', () => setPlaying(true));
+    video.addEventListener('pause', () => setPlaying(false));
+    video.addEventListener('ended', () => setPlaying(false));
+
+    const updateTime = () => {
+      if (time) time.textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+      if (seek && video.duration) {
+        const pct = (video.currentTime / video.duration) * 100;
+        seek.value = String(Math.round(pct * 10));
+        seek.style.setProperty('--vp-progress', `${pct}%`);
+      }
+    };
+    video.addEventListener('timeupdate', updateTime);
+    video.addEventListener('loadedmetadata', updateTime);
+
+    seek?.addEventListener('input', () => {
+      if (!video.duration) return;
+      video.currentTime = (Number(seek.value) / 1000) * video.duration;
+      seek.style.setProperty('--vp-progress', `${Number(seek.value) / 10}%`);
+    });
+
+    mute?.addEventListener('click', () => {
+      video.muted = !video.muted;
+      root.classList.toggle('is-muted', video.muted);
+      mute.setAttribute('aria-label', video.muted ? 'Unmute' : 'Mute');
+    });
+
+    fs?.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else root.requestFullscreen?.().catch(() => {});
+    });
+
+    root.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'BUTTON' || target.tagName === 'INPUT') return;
+      if (e.key === ' ' || e.key.toLowerCase() === 'k') { e.preventDefault(); playPause(); }
+      if (e.key.toLowerCase() === 'm') mute?.click();
+      if (e.key.toLowerCase() === 'f') fs?.click();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-video-player]').forEach(initPlayer);
+</script>

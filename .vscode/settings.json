@@ -1,0 +1,18 @@
+{
+  "files.associations": {
+    "*.mdx": "mdx",
+    "Caddyfile": "caddyfile"
+  },
+  "editor.formatOnSave": true,
+  "[astro]": { "editor.defaultFormatter": "astro-build.astro-vscode" },
+  "tailwindCSS.classAttributes": ["class", "class:list", "className"],
+  "tailwindCSS.experimental.classRegex": [["class:list=\\{\\[([^\\]]*)\\]\\}", "'([^']*)'"]],
+  "frontMatter.experimental": false,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.astro": true,
+    "public/media/**": true,
+    "host-media/**": true
+  }
+}

@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SOCIALS } from '../lib/content';
+---
+
+<BaseLayout title="About">
+  <section class="mx-auto grid max-w-6xl gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div class="mdx">
+      <!-- TODO: replace placeholder bio -->
+      <p>
+        I'm <strong>Dashiell Badcock</strong>, an interactive media artist and physical computing
+        designer. My work sits where fabrication meets firmware: illuminated sculptures, kinetic
+        lighting systems and responsive environments that are engineered as carefully as they are
+        composed.
+      </p>
+      <p>
+        Every piece is built end-to-end — modelled, printed and machined in the workshop,
+        wired and programmed on the bench, then tuned in the space it will live in.
+      </p>
+      <p>
+        Alongside the light work I write and perform electronic music, often using the same
+        microcontrollers and sensors to drive both sound and light from a single system.
+      </p>
+      <p>I'm available for commissions, collaborations and technical consulting.</p>
+    </div>
+
+    <aside class="self-start rounded-lg border border-line bg-charcoal p-6">
+      <ul class="space-y-2 font-mono text-sm">
+        {
+          SOCIALS.map(({ label, handle, href }) => (
+            <li class="flex items-baseline justify-between gap-4">
+              <span class="text-silver/60">{label}</span>
+              <a href={href} target="_blank" rel="me noopener noreferrer" class="text-white transition-colors hover:text-neon">
+                {handle} ↗
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+  </section>
+</BaseLayout>
