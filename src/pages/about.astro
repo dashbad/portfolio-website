@@ -1,30 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SOCIALS } from '../lib/content';
 ---
 
 <BaseLayout title="About">
-  <section class="mx-auto grid max-w-6xl gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+  <section class="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
     <div class="mdx">
-      <!-- TODO: replace placeholder bio -->
       <p>
-        I'm <strong>Dashiell Badcock</strong>, INSERT BIO 
+        I'm <strong>Dashiell Badcock</strong>, a British technologist and maker based in Singapore. With a background in engineering, I spent nearly two decades in big tech. Alongside my professional career, I have maintained a lifelong practice in Electronic Music, DJing & creative technology.
       </p>
     </div>
-
-    <aside class="self-start rounded-lg border border-line bg-charcoal p-6">
-      <ul class="space-y-2 font-mono text-sm">
-        {
-          SOCIALS.map(({ label, handle, href }) => (
-            <li class="flex items-baseline justify-between gap-4">
-              <span class="text-silver/60">{label}</span>
-              <a href={href} target="_blank" rel="me noopener noreferrer" class="text-white transition-colors hover:text-neon">
-                {handle} ↗
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </aside>
   </section>
 </BaseLayout>
+
