@@ -16,12 +16,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashbad-portfolio.rule=Host(`dashbad.com`) || Host(`www.dashbad.com`)"
       - "traefik.http.routers.dashbad-portfolio.entrypoints=websecure"
-      - "traefik.http.routers.dashbad-portfolio.tls.certresolver=myresolver"
+      - "traefik.http.routers.dashbad-portfolio.tls=true"
       - "traefik.http.services.dashbad-portfolio.loadbalancer.server.port=80"
       - "traefik.http.middlewares.dashbad-portfolio-sec.headers.stsSeconds=31536000"
       - "traefik.http.routers.dashbad-portfolio.middlewares=dashbad-portfolio-sec"
     networks:
-      - traefik_proxy
+      - traefik
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
       interval: 30s
@@ -29,5 +29,5 @@ services:
       retries: 3
 
 networks:
-  traefik_proxy:
+  traefik:
     external: true
