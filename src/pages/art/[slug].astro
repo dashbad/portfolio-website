@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { entry, prev, next } = Astro.props;
-const { title, category, year, summary, heroVideo, heroPoster, specs, gallery } = entry.data;
+const { title, year, summary, heroVideo, heroPoster, specs, gallery } = entry.data;
 const { Content } = await render(entry);
 ---
 
@@ -28,9 +28,7 @@ const { Content } = await render(entry);
     <VideoPlayer src={heroVideo} poster={heroPoster} mode="ambient" title={`${title} — ambient loop`} aspect="21 / 9" class="mt-6" />
 
     <header class="mt-10 max-w-3xl">
-      <p class="mono-label flex items-center gap-3 text-neon">
-        <span>{category}</span>
-        <span class="text-silver/40" aria-hidden="true">/</span>
+      <p class="mono-label text-neon">
         <span class="text-silver">{year}</span>
       </p>
       <h1 class="mt-3 text-4xl sm:text-6xl">{title}</h1>

@@ -28,7 +28,6 @@ const art = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/art' }),
   schema: z.object({
     title: z.string(),
-    category: z.string(), // e.g. "Kinetic Lighting"
     year: z.number().int().min(1990).max(2100),
     summary: z.string().optional(),
     heroVideo: mediaPath,

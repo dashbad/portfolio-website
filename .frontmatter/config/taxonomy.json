@@ -1,20 +1,7 @@
 {
   "$schema": "https://frontmatter.codes/frontmatter.schema.json",
 
-  "frontMatter.taxonomy.customTaxonomy": [
-    {
-      "id": "category",
-      "options": [
-        "Kinetic Lighting",
-        "Light Sculpture",
-        "Installation",
-        "Interactive",
-        "Wearable",
-        "Performance",
-        "Research"
-      ]
-    }
-  ],
+  "frontMatter.taxonomy.customTaxonomy": [],
 
   "frontMatter.taxonomy.fieldGroups": [
     {

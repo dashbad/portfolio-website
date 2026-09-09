@@ -25,3 +25,6 @@ public/media/*
 host-media/*
 !host-media/.gitkeep
 !host-media/README.md
+
+# Front Matter CMS local cache/database
+.frontmatter/database/

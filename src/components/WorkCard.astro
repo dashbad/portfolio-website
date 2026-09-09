@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { work, eager = false, class: className } = Astro.props;
-const { title, category, year, heroPoster } = work.data;
+const { title, year, heroPoster } = work.data;
 ---
 
 <a
@@ -28,7 +28,7 @@ const { title, category, year, heroPoster } = work.data;
     </div>
     <img
       src={heroPoster}
-      alt={`${title} — ${category}`}
+      alt={`${title} (${year})`}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       class="absolute inset-0 z-10 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
