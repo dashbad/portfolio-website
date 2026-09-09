@@ -19,9 +19,9 @@
       "name": "heroVideo",
       "type": "file",
       "fileExtensions": ["mp4", "webm", "mov"],
-      "required": true
+      "required": false
     },
-    { "title": "Hero poster", "name": "heroPoster", "type": "image", "isPreviewImage": true, "required": true },
+    { "title": "Hero poster", "name": "heroPoster", "type": "image", "isPreviewImage": true, "required": false },
     {
       "title": "Specifications",
       "name": "specs",

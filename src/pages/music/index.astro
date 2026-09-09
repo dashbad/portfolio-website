@@ -8,6 +8,13 @@ const tracks = await getPublishedMusic();
 
 <BaseLayout title="Music">
   <section class="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16" aria-label="Tracks">
+    <header class="mb-12">
+      <h1 class="text-4xl sm:text-5xl">Music</h1>
+      <p class="mt-4 text-lg leading-relaxed text-silver">
+        I have been DJing for over 25 years. Below you can find my latest mixes. They are sorted in reverse chronological order. Tracklists can be found in the description for each mix if you click through to Soundcloud.
+      </p>
+    </header>
+
     <ul class="space-y-12">
       {
         tracks.map((track) => (

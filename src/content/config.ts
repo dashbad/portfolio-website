@@ -20,7 +20,7 @@ const mediaPath = z
 
 const galleryImage = z.object({
   src: mediaPath,
-  alt: z.string(),
+  alt: z.string().default(''),
   caption: z.string().optional(),
 });
 
@@ -30,8 +30,8 @@ const art = defineCollection({
     title: z.string(),
     year: z.number().int().min(1990).max(2100),
     summary: z.string().optional(),
-    heroVideo: mediaPath,
-    heroPoster: mediaPath,
+    heroVideo: mediaPath.nullable().optional(),
+    heroPoster: mediaPath.nullable().optional(),
     specs: z.object({
       dimensions: z.string().optional(),
       controller: z.string().optional(),

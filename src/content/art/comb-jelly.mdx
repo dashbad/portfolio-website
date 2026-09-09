@@ -1,85 +1,29 @@
 ---
-title: "Comb Jelly"
-year: 2025
-order: 1
-summary: "A suspended, slowly undulating light body inspired by ctenophore cilia — addressable LEDs pulsing through layered translucent skins."
-heroVideo: "/media/art/comb-jelly/hero-loop.mp4"
-heroPoster: "/media/art/comb-jelly/poster.jpg"
+title: Comb Jelly
+year: 2026
+order: 2
+summary: |-
+  This began as an expirment in modeling using the Form tool in Fusion 360, to see how easy it is to create non-geometric shapes. 
+
+  The inspiration is a  comb Jelly. 
+
+  The construction is based around an inner form that the LEDs are mounted to, contained within a transparent outer shell.
+
+  I am not completely happy with the outcome. Mounting the shells to the base was very tricky and I had hoped the LEDs would diffuse better through the outer shell. My original plan was to use the same technique as I used for the fibre triangles however this did not produce a bright enough light.
+heroVideo: /media/art/comb-jelly/hero-loop.mp4
+heroPoster: /media/art/comb-jelly/f58e3809-6056-43c9-922c-c4f8c525aa16-copied-media~2.jpg
 specs:
-  dimensions: "1800 × 600 × 600 mm, suspended"
-  controller: "ESP32-S3, custom FastLED firmware, Art-Net input"
-  power: "5 V DC · 2 × 350 W Mean Well supplies · 40 A peak"
-  illumination: "2,048 × SK6812 RGBW addressable LEDs"
+  dimensions: 250 x 240mm
+  controller: MagWLED-1
+  power: 5 V DC via Type C USB
+  illumination: 104 SK6812 LEDs
   materials:
-    - "Polycarbonate diffuser ribs"
-    - "3D-printed PETG spine"
-    - "Silicone LED channels"
-    - "Stainless suspension cable"
+    - Marble PLA Base and Strut
+    - White PLA inner core
+    - Transparent PLA outer shell
 gallery:
-  - src: "/media/art/comb-jelly/bench-01.jpg"
-    alt: "Spine segments laid out on the bench before assembly"
-    caption: "Spine segments, first test fit"
-  - src: "/media/art/comb-jelly/bench-02.jpg"
-    alt: "Soldering LED strips into silicone channels"
-    caption: "LED channel wiring"
-  - src: "/media/art/comb-jelly/bench-03.jpg"
-    alt: "First light test in the workshop"
-    caption: "First light"
+  - fieldGroup: galleryImage
+    src: /media/art/comb-jelly/a0dd32cb-cc87-41e1-8280-880ca588d913-copied-media~2.jpg
+  - fieldGroup: galleryImage
+    src: /media/art/comb-jelly/f58e3809-6056-43c9-922c-c4f8c525aa16-copied-media~2.jpg
 ---
-import Gallery from '../../components/Gallery.astro';
-import VideoPlayer from '../../components/VideoPlayer.astro';
-
-## Overview
-
-*Placeholder copy — replace with the project narrative.*
-
-Comb Jelly is a suspended light form that breathes. Eight rows of LEDs run the length of a
-segmented spine, each row driven by a travelling-wave pattern so that light appears to ripple
-down the body like the cilia of a ctenophore. Layered polycarbonate skins diffuse the pixels
-into soft bands of colour.
-
-## Concept
-
-The piece explores **bioluminescence as a slow signal**: motion that is perceived rather than
-seen, and colour that shifts over minutes rather than seconds. Wave speed and hue are
-modulated by ambient sound level in the room.
-
-## 3D design
-
-Structure was modelled in Fusion 360 and sliced into 24 printable spine segments. 2D renders
-are shown below in place of the interactive model.
-
-<Gallery
-  columns={2}
-  images={[
-    { src: '/media/art/comb-jelly/cad-iso.png', alt: 'Isometric CAD render of the spine assembly', caption: 'Isometric — full assembly' },
-    { src: '/media/art/comb-jelly/cad-section.png', alt: 'Section view showing LED channel and diffuser stack', caption: 'Section — diffuser stack' },
-  ]}
-/>
-
-## Electronics & control
-
-| Signal        | Pin      | Notes                              |
-| ------------- | -------- | ---------------------------------- |
-| LED data 0–3  | GPIO 4–7 | 74HCT245 level shifted             |
-| LED data 4–7  | GPIO 8–11| 74HCT245 level shifted             |
-| Mic (I²S)     | GPIO 12–14 | INMP441, 16 kHz                  |
-| Art-Net       | Wi-Fi    | Universe 0–15, fallback to internal |
-
-```cpp
-// Travelling-wave pattern (excerpt)
-for (int i = 0; i < NUM_LEDS; i++) {
-  uint8_t phase = (i * WAVE_SCALE) + (millis() / WAVE_SPEED);
-  leds[i] = ColorFromPalette(palette, phase, sin8(phase));
-}
-```
-
-## Showcase
-
-<VideoPlayer
-  mode="showcase"
-  src="/media/art/comb-jelly/showcase.mp4"
-  poster="/media/art/comb-jelly/poster.jpg"
-  title="Comb Jelly — showcase"
-  caption="Comb Jelly — installation walkthrough, 2025"
-/>

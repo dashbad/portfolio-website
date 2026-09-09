@@ -1,76 +1,41 @@
 ---
-title: "Paragami LED"
+title: Paragami LED Adaption
 year: 2024
-order: 2
-summary: "Parametric origami panels folded from a single sheet, back-lit by a dense LED matrix so the creases become lines of light."
-heroVideo: "/media/art/paragami-led/hero-loop.mp4"
-heroPoster: "/media/art/paragami-led/poster.jpg"
+order: 4
+summary: |-
+  This was my first LED project. Full credit for the original model goes to Paragami (paragami.com), which I modified to make the pieces hollow and designed the backboard and frame.
+
+  The frame is constructed from mahogany with mitres and rabbets cut with hand held power tools. Despite this, the hardest part was achieving a nice painted finish on the frame. I also allowed too much tolerance between the pieces so there are small visible gaps up close under natural light
+heroVideo: /media/art/paragami-led/hero-loop2.mp4
+heroPoster: /media/art/paragami-led/PXL_20241009_233546715.MP.jpg
 specs:
-  dimensions: "1200 × 1200 × 180 mm, wall mounted"
-  controller: "Teensy 4.1 + OctoWS2811, USB MIDI input"
-  power: "5 V DC · 60 A · distributed injection every 100 LEDs"
-  illumination: "1,296 × WS2812B in a 36 × 36 matrix"
+  dimensions: 110 x 50 cm
+  controller: Quin LED Dig Uno
+  power: "5 V DC "
+  illumination: 242 SK6812 5V LEDs
   materials:
-    - "Folded polypropylene sheet"
-    - "Laser-cut acrylic tessellation frame"
-    - "Birch ply backing"
-    - "Aluminium extrusion sub-frame"
+    - White PLA
+    - Mahogany Frame
 gallery:
-  - src: "/media/art/paragami-led/bench-01.jpg"
-    alt: "Scoring the fold pattern on polypropylene sheet"
-    caption: "Scoring the crease pattern"
-  - src: "/media/art/paragami-led/bench-02.jpg"
-    alt: "LED matrix mounted to ply backing"
-    caption: "Matrix on backing board"
-  - src: "/media/art/paragami-led/bench-03.jpg"
-    alt: "Panel lit from behind during testing"
-    caption: "Backlight test"
+  - src: /media/art/paragami-led/PXL_20241121_130203604.MP.jpg
+    alt: LED Connections
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241005_012739996.jpg
+    alt: Backboard construction
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241006_083053901.jpg
+    alt: Wiring
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241009_090535039.MP.jpg
+    alt: More wiring
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241006_024408275.jpg
+    alt: Frame Preparation
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241009_090547187.MP.jpg
+    alt: Frame Construction
+    fieldGroup: galleryImage
+  - src: /media/art/paragami-led/PXL_20241009_090513249.jpg
+    alt: Final Custruction
+    fieldGroup: galleryImage
 ---
-import Gallery from '../../components/Gallery.astro';
-import VideoPlayer from '../../components/VideoPlayer.astro';
-
-## Overview
-
-*Placeholder copy — replace with the project narrative.*
-
-Paragami LED is a wall-mounted relief. A parametric crease pattern is generated in
-Grasshopper, scored and folded from one continuous sheet, then mounted a fixed distance in
-front of a 36 × 36 LED matrix. Light leaks through the folds so the geometry reads as glowing
-edges rather than lit surfaces.
-
-## Concept
-
-The fold pattern is derived from a Miura-ori tessellation, distorted by a sine field so the
-panel appears to buckle under an invisible pressure wave. Animations run along the same
-field, so the light follows the fold logic.
-
-## 3D design
-
-<Gallery
-  columns={2}
-  images={[
-    { src: '/media/art/paragami-led/cad-pattern.png', alt: 'Flat crease pattern with mountain and valley folds marked', caption: 'Crease pattern — mountain / valley' },
-    { src: '/media/art/paragami-led/cad-relief.png', alt: 'Rendered relief showing folded geometry in front of matrix', caption: 'Relief render' },
-  ]}
-/>
-
-## Electronics & control
-
-Eight parallel data lines from the OctoWS2811 adapter drive 162 LEDs each. The panel
-responds to USB MIDI so it can be played from a controller or sequenced alongside a live set.
-
-| Parameter | Range        | MIDI CC |
-| --------- | ------------ | ------- |
-| Hue       | 0 – 255      | 1       |
-| Wave speed| 0.1 – 4.0 Hz | 2       |
-| Fold gain | 0 – 100 %    | 3       |
-
-## Showcase
-
-<VideoPlayer
-  mode="showcase"
-  src="/media/art/paragami-led/showcase.mp4"
-  poster="/media/art/paragami-led/poster.jpg"
-  title="Paragami LED — showcase"
-  caption="Paragami LED — animation study, 2024"
-/>
