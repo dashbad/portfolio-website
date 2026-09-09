@@ -4,7 +4,7 @@
 # Build stage — compile the Astro static site.
 # Astro 7 requires Node >= 22.12, so node:22-alpine is used rather than Node 20.
 # ---------------------------------------------------------------------------
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
