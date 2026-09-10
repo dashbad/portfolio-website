@@ -3,15 +3,22 @@
   "frontMatter.framework.id": "astro",
   "frontMatter.preview.host": "http://localhost:4321",
   "frontMatter.content.defaultFileType": "mdx",
-  "frontMatter.content.supportedFileTypes": ["mdx", "md"],
-
+  "frontMatter.content.supportedFileTypes": [
+    "mdx",
+    "md"
+  ],
   "frontMatter.content.publicFolder": "public",
   "frontMatter.media.pasteFolder": "public/media",
-  "frontMatter.media.supportedMimeTypes": ["image/*", "video/*", "audio/*"],
+  "frontMatter.media.supportedMimeTypes": [
+    "image/*",
+    "video/*",
+    "audio/*"
+  ],
   "frontMatter.media.defaultSorting": "LastModifiedDesc",
-
   "frontMatter.dashboard.openOnStart": false,
   "frontMatter.content.autoUpdateDate": false,
-
-  "frontMatter.extends": ["./.frontmatter/config/taxonomy.json"]
+  "frontMatter.extends": [
+    "./.frontmatter/config/taxonomy.json"
+  ],
+  "frontMatter.experimental": false
 }

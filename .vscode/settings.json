@@ -4,10 +4,20 @@
     "Caddyfile": "caddyfile"
   },
   "editor.formatOnSave": true,
-  "[astro]": { "editor.defaultFormatter": "astro-build.astro-vscode" },
-  "tailwindCSS.classAttributes": ["class", "class:list", "className"],
-  "tailwindCSS.experimental.classRegex": [["class:list=\\{\\[([^\\]]*)\\]\\}", "'([^']*)'"]],
-  "frontMatter.experimental": false,
+  "[astro]": {
+    "editor.defaultFormatter": "astro-build.astro-vscode"
+  },
+  "tailwindCSS.classAttributes": [
+    "class",
+    "class:list",
+    "className"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    [
+      "class:list=\\{\\[([^\\]]*)\\]\\}",
+      "'([^']*)'"
+    ]
+  ],
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
