@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Portfolio of Dashiell Badcock — interactive media artist, physical computing designer and electronic musician.",
+  "description": "Portfolio of Dashiell Badcock",
   "engines": {
     "node": ">=22.12.0"
   },

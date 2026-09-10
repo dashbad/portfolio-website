@@ -1,7 +1,6 @@
 # Dashiell Badcock — Portfolio
 
-Personal portfolio for an interactive media artist, physical computing designer and electronic
-musician. Built with **Astro 7**, **Tailwind CSS 4**, **MDX** and **TypeScript**, served in
+Personal portfolio website. Built with **Astro 7**, **Tailwind CSS 4**, **MDX** and **TypeScript**, served in
 production by **Caddy 2** with heavy media mounted from the host.
 
 ```bash
