@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SoundCloudPlayer from '../../components/SoundCloudPlayer.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import { getPublishedMusic } from '../../lib/content';
 
 const tracks = await getPublishedMusic();
@@ -25,5 +26,32 @@ const tracks = await getPublishedMusic();
         ))
       }
     </ul>
+
+    <section class="mt-20 border-t border-line pt-12" aria-labelledby="youtube-heading">
+      <div class="mb-6 flex items-baseline justify-between border-b border-line pb-4">
+        <h2 id="youtube-heading" class="text-2xl sm:text-3xl">
+          <a
+            href="https://www.youtube.com/@dashbad"
+            target="_blank"
+            rel="me noopener noreferrer"
+            class="group inline-flex items-center gap-2 text-white transition-colors hover:text-neon"
+          >
+            <span>On Youtube</span>
+            <span class="text-neon transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
+          </a>
+        </h2>
+        <a
+          href="https://www.youtube.com/@dashbad"
+          target="_blank"
+          rel="me noopener noreferrer"
+          class="font-mono text-xs text-silver/70 transition-colors hover:text-neon"
+        >
+          @dashbad ↗
+        </a>
+      </div>
+
+      <YouTubeEmbed />
+    </section>
   </section>
 </BaseLayout>
+

@@ -1,0 +1,79 @@
+---
+interface Props {
+  videoId?: string;
+  title?: string;
+  class?: string;
+}
+
+const CHANNEL_ID = 'UCstFin6nlhDxRhG8d9mNtGg';
+const FALLBACK_ID = 'uIDKLJzj_5Q';
+const FALLBACK_TITLE = 'Underground Techno & Breakbeats - 6 Hour DJ Set';
+
+let { videoId, title, class: className } = Astro.props;
+
+function decodeXml(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+if (!videoId) {
+  try {
+    const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`, {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (res.ok) {
+      const xml = await res.text();
+      const idMatch = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+      const titleMatches = xml.match(/<title>([^<]+)<\/title>/g);
+      if (idMatch && idMatch[1]) {
+        videoId = idMatch[1];
+        if (!title && titleMatches && titleMatches[1]) {
+          title = decodeXml(titleMatches[1].replace(/<\/?title>/g, ''));
+        }
+      }
+    }
+  } catch {
+    // Graceful fallback if offline or during timeout
+  }
+}
+
+videoId = videoId || FALLBACK_ID;
+title = title || FALLBACK_TITLE;
+---
+
+<div
+  class:list={[
+    'overflow-hidden rounded-lg border border-line bg-charcoal transition-[border-color,box-shadow] duration-300 hover:border-neon/50 hover:shadow-neon',
+    className,
+  ]}
+>
+  <div class="relative w-full aspect-video">
+    <iframe
+      class="absolute inset-0 h-full w-full border-0 bg-void"
+      src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+      title={title}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+      loading="lazy"
+    ></iframe>
+  </div>
+
+  {title && (
+    <div class="flex flex-col gap-2 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between font-mono text-xs">
+      <span class="truncate font-medium text-white">{title}</span>
+      <a
+        href={`https://www.youtube.com/watch?v=${videoId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 text-silver/70 transition-colors hover:text-neon"
+      >
+        Watch on YouTube ↗
+      </a>
+    </div>
+  )}
+</div>

@@ -28,6 +28,8 @@ export async function getPublishedMusic(): Promise<MusicEntry[]> {
 export const SOCIALS = [
   { label: 'GitHub', handle: 'github.com/dashbad', href: 'https://github.com/dashbad' },
   { label: 'SoundCloud', handle: 'soundcloud.com/dashbad', href: 'https://www.soundcloud.com/dashbad' },
+  { label: 'YouTube', handle: 'youtube.com/@dashbad', href: 'https://www.youtube.com/@dashbad' },
   { label: 'LinkedIn', handle: 'in/dashbadcock', href: 'https://www.linkedin.com/in/dashbadcock/' },
   { label: 'Instagram', handle: '@dashbad', href: 'https://www.instagram.com/dashbad/' },
 ] as const;
+
