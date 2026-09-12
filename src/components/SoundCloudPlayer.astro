@@ -6,8 +6,8 @@
  * Safety: the string is never injected as raw HTML. The first <iframe> in the
  * pasted code is located (SoundCloud appends an attribution <div>, which is
  * ignored), its `src` must point at https://w.soundcloud.com/player/, and a
- * fresh <iframe> is rendered by Astro with the player colour forced to Neon
- * Cyan. Anything else falls back to a plain link.
+ * fresh <iframe> is rendered by Astro with a neutral player colour. Anything
+ * else falls back to a plain link.
  */
 interface Props {
   embed: string;
@@ -37,7 +37,7 @@ function parseEmbed(html: string): { src: string; height: number } | null {
   }
   if (url.origin !== ALLOWED_ORIGIN || !url.pathname.startsWith(ALLOWED_PATH)) return null;
 
-  url.searchParams.set('color', '#00ffff');
+  url.searchParams.set('color', '#171717');
 
   const rawHeight = Number(iframe.match(/\sheight\s*=\s*["']?(\d+)/i)?.[1] ?? 166);
   const height = Math.min(Math.max(rawHeight || 166, 100), 600);
@@ -52,7 +52,7 @@ const parsed = parseEmbed(embed);
   parsed ? (
     <div
       class:list={[
-        'sc-player overflow-hidden rounded-lg border border-line bg-charcoal p-3 transition-[border-color,box-shadow] duration-300 hover:border-neon/50 sm:p-4',
+        'sc-player overflow-hidden rounded-xl border border-border bg-muted p-3 sm:p-4',
         className,
       ]}
     >
@@ -64,15 +64,15 @@ const parsed = parseEmbed(embed);
         allow="autoplay; encrypted-media"
         loading="lazy"
         referrerpolicy="strict-origin-when-cross-origin"
-        class="block w-full overflow-hidden rounded-md border-0 bg-void"
+        class="block w-full overflow-hidden rounded-md border-0 bg-background"
         style="border: 0; overflow: hidden;"
       />
     </div>
   ) : (
-    <div class:list={['rounded-lg border border-dashed border-line bg-charcoal p-5 font-mono text-xs text-silver', className]}>
-      <p class="text-white">Embed rejected — expected a single SoundCloud player &lt;iframe&gt;.</p>
+    <div class:list={['rounded-xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground', className]}>
+      <p class="text-foreground">Embed rejected — expected a single SoundCloud player &lt;iframe&gt;.</p>
       {fallbackUrl && (
-        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-neon hover:underline">
+        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-foreground underline underline-offset-2">
           Listen on SoundCloud ↗
         </a>
       )}

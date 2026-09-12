@@ -8,10 +8,10 @@ const tracks = await getPublishedMusic();
 ---
 
 <BaseLayout title="Music">
-  <section class="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16" aria-label="Tracks">
+  <section class="mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-14" aria-label="Tracks">
     <header class="mb-12">
       <h1 class="text-4xl sm:text-5xl">Music</h1>
-      <p class="mt-4 text-lg leading-relaxed text-silver">
+      <p class="mt-5 text-lg leading-relaxed text-muted-foreground">
         I have been DJing for over 25 years. Below you can find my latest mixes. They are sorted in reverse chronological order. Tracklists can be found in the description for each mix if you click through to Soundcloud.
       </p>
     </header>
@@ -27,31 +27,13 @@ const tracks = await getPublishedMusic();
       }
     </ul>
 
-    <section class="mt-20 border-t border-line pt-12" aria-labelledby="youtube-heading">
-      <div class="mb-6 flex items-baseline justify-between border-b border-line pb-4">
-        <h2 id="youtube-heading" class="text-2xl sm:text-3xl">
-          <a
-            href="https://www.youtube.com/@dashbad"
-            target="_blank"
-            rel="me noopener noreferrer"
-            class="group inline-flex items-center gap-2 text-white transition-colors hover:text-neon"
-          >
-            <span>On Youtube</span>
-            <span class="text-neon transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
-          </a>
-        </h2>
-        <a
-          href="https://www.youtube.com/@dashbad"
-          target="_blank"
-          rel="me noopener noreferrer"
-          class="font-mono text-xs text-silver/70 transition-colors hover:text-neon"
-        >
-          @dashbad ↗
+    <section class="mt-20 border-t border-border pt-12" aria-labelledby="youtube-heading">
+      <h2 id="youtube-heading" class="mb-6 text-2xl sm:text-3xl">
+        <a href="https://www.youtube.com/@dashbad" target="_blank" rel="me noopener noreferrer" class="transition-colors hover:text-muted-foreground">
+          On YouTube
         </a>
-      </div>
-
+      </h2>
       <YouTubeEmbed />
     </section>
   </section>
 </BaseLayout>
-

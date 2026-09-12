@@ -1,35 +1,43 @@
 ---
-import '@fontsource-variable/inter';
-import '@fontsource-variable/jetbrains-mono';
 import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import { Navbar } from '@/components/ui/mini-navbar';
+import Footer16 from '@/components/ui/footer-16';
+import { SOCIALS } from '@/lib/content';
 
 interface Props {
   title?: string;
   description?: string;
   /** Absolute or root-relative path used for Open Graph previews. */
   image?: string;
+  /** Remove the top padding that clears the fixed navbar (full-bleed heroes). */
+  flush?: boolean;
 }
 
 const SITE_NAME = 'Dashiell Badcock';
-const DEFAULT_DESCRIPTION =
-  'Dashiell Badcock — Portfolio';
+const DEFAULT_DESCRIPTION = 'Dashiell Badcock — Portfolio';
 
-const { title, description = DEFAULT_DESCRIPTION, image } = Astro.props;
+const NAV = [
+  { href: '/art', label: 'Art' },
+  { href: '/music', label: 'Music' },
+  { href: '/about', label: 'About' },
+];
+
+const { title, description = DEFAULT_DESCRIPTION, image, flush = false } = Astro.props;
 const pageTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME}`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const ogImage = image && Astro.site ? new URL(image, Astro.site).toString() : image;
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const footerLinks = SOCIALS.map(({ label, href }) => ({ label, href }));
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0a0a0c" />
+    <meta name="theme-color" content="#171717" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {canonical && <link rel="canonical" href={canonical} />}
@@ -40,12 +48,12 @@ const ogImage = image && Astro.site ? new URL(image, Astro.site).toString() : im
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
   </head>
-  <body class="flex min-h-screen flex-col bg-void text-silver">
+  <body class="flex min-h-screen flex-col">
     <a href="#main" class="skip-link">Skip to content</a>
-    <Header />
-    <main id="main" class="flex-1">
+    <Navbar client:load name={SITE_NAME} links={NAV} currentPath={path} />
+    <main id="main" class:list={['flex-1', !flush && 'pt-20']}>
       <slot />
     </main>
-    <Footer />
+    <Footer16 name={SITE_NAME} links={footerLinks} />
   </body>
 </html>

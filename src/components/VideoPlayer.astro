@@ -3,7 +3,7 @@
  * VideoPlayer — responsive HTML5 video wrapper.
  *
  *  mode="ambient"  → silent, autoplaying, looping hero loop. No controls.
- *  mode="showcase" → full video with custom Neon Cyan controls
+ *  mode="showcase" → full video with custom controls
  *                    (play/pause, seek, time, mute, fullscreen, keyboard).
  *
  * `src`/`poster` are `/media/...` paths served from the external media mount.
@@ -38,7 +38,7 @@ const videoAttrs = ambient
 
 <figure
   class:list={[
-    'video-player group relative isolate overflow-hidden rounded-lg border border-line bg-charcoal',
+    'video-player group relative isolate overflow-hidden rounded-xl border border-border bg-muted',
     className,
   ]}
   data-video-player
@@ -48,8 +48,8 @@ const videoAttrs = ambient
 >
   <div class="media-frame relative w-full" style={`aspect-ratio: ${aspect};`}>
     <div class="media-fallback" aria-hidden="true">
-      <span class="mono-label">Media offline</span>
-      <span class="max-w-full truncate font-mono text-[10px] text-silver/50">{src}</span>
+      <span>Media offline</span>
+      <span class="max-w-full truncate font-mono text-[10px] text-muted-foreground/70">{src}</span>
     </div>
 
     <video
@@ -67,11 +67,11 @@ const videoAttrs = ambient
         <>
           <button
             type="button"
-            class="vp-bigplay absolute inset-0 z-20 flex items-center justify-center bg-void/30 transition-opacity duration-300"
+            class="vp-bigplay absolute inset-0 z-20 flex items-center justify-center bg-black/30 transition-opacity duration-300"
             data-vp="bigplay"
             aria-label={`Play ${title}`}
           >
-            <span class="flex h-16 w-16 items-center justify-center rounded-full border border-neon bg-void/70 text-neon shadow-neon transition-transform duration-300 group-hover:scale-110">
+            <span class="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 bg-black/60 text-white transition-transform duration-300 group-hover:scale-110">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
@@ -79,7 +79,7 @@ const videoAttrs = ambient
           </button>
 
           <div
-            class="vp-controls absolute inset-x-0 bottom-0 z-30 flex items-center gap-3 bg-gradient-to-t from-void/95 via-void/70 to-transparent px-3 pb-3 pt-8 font-mono text-[11px] text-white"
+            class="vp-controls absolute inset-x-0 bottom-0 z-30 flex items-center gap-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-3 pb-3 pt-8 text-xs text-white"
             data-vp="controls"
           >
             <button type="button" class="vp-btn" data-vp="toggle" aria-label="Play">
@@ -87,7 +87,7 @@ const videoAttrs = ambient
               <svg class="vp-icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z" /></svg>
             </button>
 
-            <span class="tabular-nums text-silver" data-vp="time">0:00 / 0:00</span>
+            <span class="tabular-nums text-white/70" data-vp="time">0:00 / 0:00</span>
 
             <input
               type="range"
@@ -114,7 +114,7 @@ const videoAttrs = ambient
     }
   </div>
 
-  {caption && <figcaption class="border-t border-line px-4 py-2.5 font-mono text-[11px] text-silver">{caption}</figcaption>}
+  {caption && <figcaption class="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">{caption}</figcaption>}
 </figure>
 
 <style>
@@ -141,22 +141,22 @@ const videoAttrs = ambient
     color: #ffffff;
     transition: color 150ms, background-color 150ms;
   }
-  .vp-btn:hover { color: var(--color-neon); background: rgb(0 255 255 / 0.08); }
+  .vp-btn:hover { background: rgb(255 255 255 / 0.12); }
   .vp-icon-pause, .vp-icon-muted { display: none; }
   .is-playing .vp-icon-play { display: none; }
   .is-playing .vp-icon-pause { display: block; }
   .is-muted .vp-icon-sound { display: none; }
   .is-muted .vp-icon-muted { display: block; }
 
-  /* Neon seek bar */
+  /* Seek bar */
   .vp-seek {
     appearance: none;
     -webkit-appearance: none;
     height: 2px;
     background: linear-gradient(
       to right,
-      var(--color-neon) 0%,
-      var(--color-neon) var(--vp-progress, 0%),
+      #ffffff 0%,
+      #ffffff var(--vp-progress, 0%),
       rgb(255 255 255 / 0.2) var(--vp-progress, 0%),
       rgb(255 255 255 / 0.2) 100%
     );
@@ -170,8 +170,7 @@ const videoAttrs = ambient
     width: 12px;
     height: 12px;
     border-radius: 9999px;
-    background: var(--color-neon);
-    box-shadow: var(--shadow-neon-sm);
+    background: #ffffff;
     transition: transform 150ms;
   }
   .vp-seek::-moz-range-thumb {
@@ -179,8 +178,7 @@ const videoAttrs = ambient
     height: 12px;
     border: 0;
     border-radius: 9999px;
-    background: var(--color-neon);
-    box-shadow: var(--shadow-neon-sm);
+    background: #ffffff;
   }
   .vp-seek:hover::-webkit-slider-thumb { transform: scale(1.3); }
   .video-player:fullscreen { border: 0; border-radius: 0; background: #000; }

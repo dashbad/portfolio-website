@@ -1,7 +1,7 @@
 # Dashiell Badcock — Portfolio
 
-Personal portfolio website. Built with **Astro 7**, **Tailwind CSS 4**, **MDX** and **TypeScript**, served in
-production by **Caddy 2** with heavy media mounted from the host.
+Personal portfolio website. Built with **Astro 7**, **Tailwind CSS 4**, **React** (islands only), **MDX** and
+**TypeScript**, served in production by **Caddy 2** with heavy media mounted from the host.
 
 ```bash
 npm install
@@ -16,31 +16,33 @@ Requires Node ≥ 22.12.
 
 ```
 src/
-  components/      Header, Footer, VideoPlayer, Gallery, SoundCloudPlayer, SpecsTable, WorkCard
+  components/      VideoPlayer, SoundCloudPlayer, YouTubeEmbed (Astro)
+    ui/            React components adapted from 21st.dev (navbar, lattice hero, editorial hero, galleries, footer, key-value list)
   content/
     config.ts      Content collection schemas (art, music)
     art/*.mdx      Work pages
     music/*.mdx    Tracks
-  layouts/         BaseLayout (fonts, meta, header/footer)
+  layouts/         BaseLayout (fonts, meta, navbar/footer)
   lib/content.ts   Collection helpers + social links
+  lib/utils.ts     `cn()` class helper used by the React components
   pages/           /, /art, /art/[slug], /music, /about, 404
-  styles/global.css  Design tokens (Neon Cyan system) + utilities
+  styles/global.css  shadcn/ui design tokens + prose styles
 public/media/      Local-only media (git-ignored, docker-ignored)
 host-media/        Production media mount (git-ignored, docker-ignored)
 ```
 
 ## Design system
 
-| Token        | Value     | Use                                            |
-| ------------ | --------- | ---------------------------------------------- |
-| `void`       | `#0a0a0c` | Page background                                |
-| `charcoal`   | `#121216` | Cards, distinct sections                       |
-| `neon`       | `#00ffff` | Links, hovers, focus rings, active nav, tags   |
-| `silver`     | `#a1a1aa` | Body text                                      |
-| `white`      | `#ffffff` | Headings, technical values                     |
+Dark, neutral palette (charcoal ground, off-white text) using the standard shadcn/ui token names (`background`, `foreground`, `muted`,
+`muted-foreground`, `border`, `ring`), defined in `src/styles/global.css`. Single theme; the `dark:`
+variant is class-based and never activated, so components render from the base tokens only. Font: **Inter Variable** (self-hosted via Fontsource).
 
-Fonts: **Inter Variable** (body) and **JetBrains Mono Variable** (nav, labels, specs, code),
-self-hosted via Fontsource. Utilities: `mono-label`, `tag`, `btn-neon`, `btn-ghost`, `bg-grid`.
+UI components live in `src/components/ui/` and were installed from [21st.dev](https://21st.dev) then
+adapted (demo data replaced by props, headings/filters/buttons removed). `components.json` holds the
+shadcn CLI config; `.mcp.json` points at the 21st.dev MCP server (needs `API_KEY_21ST` in the shell).
+Only the navbar, the home-page Lattice Hero (three.js via React Three Fiber, loaded on the home page
+only) and the work-page gallery lightbox are hydrated; everything else renders to static HTML.
+React is pinned to 19.2 because React Three Fiber's peer range excludes 19.3.
 
 ## Media strategy
 

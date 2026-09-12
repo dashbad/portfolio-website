@@ -1,37 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LatticeHero from '@/components/ui/lattice-hero';
 
-// Placeholder tiles — swap the `image` paths for real photos when ready.
-const tiles = [
-  { href: '/art', label: 'Art', image: '/images/tile-art.svg' },
-  { href: '/music', label: 'Music', image: '/images/tile-music.svg' },
-  { href: '/about', label: 'About', image: '/images/tile-about.svg' },
+const links = [
+  { label: 'Art', href: '/art' },
+  { label: 'Music', href: '/music' },
+  { label: 'About', href: '/about' },
 ];
 ---
 
-<BaseLayout>
-  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-    <h1 class="text-5xl sm:text-7xl">Dashiell Badcock</h1>
-
-    <nav aria-label="Sections" class="mt-14 grid gap-5 sm:grid-cols-3">
-      {
-        tiles.map(({ href, label, image }) => (
-          <a
-            href={href}
-            class="group relative block overflow-hidden rounded-lg border border-line bg-charcoal transition-[border-color,box-shadow] duration-300 hover:border-neon/70 hover:shadow-neon"
-          >
-            <img
-              src={image}
-              alt=""
-              class="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-            />
-            <span class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-void/90 to-transparent px-5 pb-4 pt-12">
-              <span class="text-2xl text-white transition-colors group-hover:text-neon">{label}</span>
-              <span class="text-neon opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true">→</span>
-            </span>
-          </a>
-        ))
-      }
-    </nav>
-  </section>
+<BaseLayout flush>
+  <LatticeHero client:load headline="Dashiell Badcock" links={links} topInset />
 </BaseLayout>

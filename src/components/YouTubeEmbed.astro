@@ -47,13 +47,13 @@ title = title || FALLBACK_TITLE;
 
 <div
   class:list={[
-    'overflow-hidden rounded-lg border border-line bg-charcoal transition-[border-color,box-shadow] duration-300 hover:border-neon/50 hover:shadow-neon',
+    'overflow-hidden rounded-xl border border-border bg-muted',
     className,
   ]}
 >
   <div class="relative w-full aspect-video">
     <iframe
-      class="absolute inset-0 h-full w-full border-0 bg-void"
+      class="absolute inset-0 h-full w-full border-0 bg-black"
       src={`https://www.youtube-nocookie.com/embed/${videoId}`}
       title={title}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -64,13 +64,13 @@ title = title || FALLBACK_TITLE;
   </div>
 
   {title && (
-    <div class="flex flex-col gap-2 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between font-mono text-xs">
-      <span class="truncate font-medium text-white">{title}</span>
+    <div class="flex flex-col gap-2 border-t border-border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+      <span class="truncate font-medium text-foreground">{title}</span>
       <a
         href={`https://www.youtube.com/watch?v=${videoId}`}
         target="_blank"
         rel="noopener noreferrer"
-        class="shrink-0 text-silver/70 transition-colors hover:text-neon"
+        class="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
       >
         Watch on YouTube ↗
       </a>
