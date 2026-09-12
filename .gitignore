@@ -28,3 +28,6 @@ host-media/*
 
 # Front Matter CMS local cache/database
 .frontmatter/database/
+
+# Claude Code local settings (may contain secrets)
+.claude/settings.local.json
