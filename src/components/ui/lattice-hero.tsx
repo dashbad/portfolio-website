@@ -92,8 +92,39 @@ float pulse(float seed, float wave){
 }
 `;
 
+/**
+ * Per-node colour. Each node carries a random phase and drifts through the
+ * palette over uDrift seconds, so neighbours differ and the whole shell slowly
+ * cycles — the way the LED panels on the geodesic dome do.
+ */
+const PALETTE = /* glsl */ `
+uniform float uTime;
+uniform float uDrift;
+uniform vec3 uPalette[6];
+attribute float aPhase;
+varying vec3 vColor;
+
+vec3 palAt(int i){
+  if (i == 0) return uPalette[0];
+  if (i == 1) return uPalette[1];
+  if (i == 2) return uPalette[2];
+  if (i == 3) return uPalette[3];
+  if (i == 4) return uPalette[4];
+  return uPalette[5];
+}
+
+vec3 drift(float phase){
+  float t = fract(phase + uTime / uDrift) * 6.0;
+  int i = int(floor(t));
+  int j = int(mod(float(i + 1), 6.0));
+  float f = smoothstep(0.0, 1.0, fract(t));
+  return mix(palAt(i), palAt(j), f);
+}
+`;
+
 const NODE_VERT = /* glsl */ `
 ${PULSE}
+${PALETTE}
 attribute float aSeed;
 uniform float uWave;
 uniform float uSize;
@@ -102,19 +133,22 @@ varying float vGlow;
 
 void main(){
   vGlow = pulse(aSeed, uWave);
+  vColor = drift(aPhase);
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   // gl_PointSize is in PHYSICAL pixels, so uSize is treated as CSS pixels and
   // scaled by the device ratio. The depth divisor is in the same units as view
   // depth — a large magic number here fuses every node into one white mass.
-  gl_PointSize = uSize * uDpr * (1.0 + vGlow * 1.6) * (5.2 / -mv.z);
+  // The sprite is mostly halo: the bright core is a fraction of the point,
+  // the rest is a soft falloff that additive blending turns into bloom.
+  gl_PointSize = uSize * uDpr * 5.4 * (1.0 + vGlow * 0.9) * (5.2 / -mv.z);
   gl_Position = projectionMatrix * mv;
 }
 `;
 
 const NODE_FRAG = /* glsl */ `
-uniform vec3 uBase;
 uniform vec3 uHot;
 varying float vGlow;
+varying vec3 vColor;
 
 void main(){
   // The sprite is drawn, not sampled — one less asset to ship.
@@ -122,11 +156,13 @@ void main(){
   float r = length(c);
   if (r > 0.5) discard;
 
-  float core = smoothstep(0.5, 0.08, r);
-  float halo = smoothstep(0.5, 0.0, r) * 0.30;
+  // Gaussian core and a wider, dimmer halo — an LED behind frosted plastic.
+  float core = exp(-r * r * 48.0);
+  float halo = exp(-r * r * 8.0) * 0.36;
+  float rim  = exp(-r * r * 2.6) * 0.09;
 
-  vec3 col = mix(uBase, uHot, vGlow);
-  float a = (core + halo * vGlow) * (0.34 + 0.66 * vGlow);
+  vec3 col = mix(vColor, uHot, vGlow);
+  float a = (core + halo + rim) * (0.85 + 0.6 * vGlow);
 
   gl_FragColor = vec4(col, a);
   #include <colorspace_fragment>
@@ -135,12 +171,14 @@ void main(){
 
 const EDGE_VERT = /* glsl */ `
 ${PULSE}
+${PALETTE}
 attribute float aSeed;
 uniform float uWave;
 varying float vGlow;
 
 void main(){
   vGlow = pulse(aSeed, uWave);
+  vColor = drift(aPhase);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
@@ -149,11 +187,15 @@ const EDGE_FRAG = /* glsl */ `
 uniform vec3  uBase;
 uniform vec3  uHot;
 uniform float uOpacity;
+uniform float uTint;
 varying float vGlow;
+varying vec3  vColor;
 
 void main(){
-  vec3 col = mix(uBase, uHot, vGlow);
-  gl_FragColor = vec4(col, uOpacity * (0.35 + 1.5 * vGlow));
+  // Edges take on the colour of the nodes they join, interpolated along
+  // their length, blended over the resting grey by uTint.
+  vec3 col = mix(mix(uBase, vColor, uTint), uHot, vGlow);
+  gl_FragColor = vec4(col, uOpacity * (0.5 + 1.3 * vGlow));
   #include <colorspace_fragment>
 }
 `;
@@ -199,9 +241,13 @@ function detectQuality(): Quality {
 
 interface ShellProps {
   spec: QualitySpec;
-  nodeColor: string;
+  /** Exactly six colours; the shader indexes a fixed-size array. */
+  palette: string[];
   lineColor: string;
   accent: string;
+  edgeTint: number;
+  driftSeconds: number;
+  parallax: number;
   radius: number;
   staticTime?: number;
   paused: boolean;
@@ -212,9 +258,12 @@ interface ShellProps {
 
 function Shell({
   spec,
-  nodeColor,
+  palette,
   lineColor,
   accent,
+  edgeTint,
+  driftSeconds,
+  parallax,
   radius,
   staticTime,
   paused,
@@ -225,9 +274,8 @@ function Shell({
   const nodeMat = React.useRef<THREE.ShaderMaterial>(null);
   const edgeMat = React.useRef<THREE.ShaderMaterial>(null);
   const { size, gl } = useThree();
-  // Matched to the `lg:` breakpoint the DOM uses, not to aspect ratio. Deciding
-  // the two independently lets them disagree — at 900x680 the shell moved right
-  // while the copy stayed centred, and they collided.
+  // Matched to the `lg:` breakpoint the DOM uses so the 3D placement and the
+  // copy alignment always agree.
   const stacked = size.width < 1024;
 
   // Built once per density. Rebuilding on every colour tweak would throw away
@@ -243,21 +291,35 @@ function Shell({
       seed[i] = (pts[i * 3 + 1] / radius) * 0.5 + 0.5;
     }
 
+    // Colour phase: a small LCG rather than Math.random so the same density
+    // always produces the same distribution.
+    const phase = new Float32Array(spec.nodes);
+    let rng = 1234567;
+    for (let i = 0; i < spec.nodes; i++) {
+      rng = (rng * 1664525 + 1013904223) >>> 0;
+      phase[i] = rng / 4294967296;
+    }
+
     const ng = new THREE.BufferGeometry();
     ng.setAttribute("position", new THREE.BufferAttribute(pts, 3));
     ng.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+    ng.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
 
     const ep = new Float32Array(edges.length * 6);
     const es = new Float32Array(edges.length * 2);
+    const ephase = new Float32Array(edges.length * 2);
     edges.forEach(([a, b], i) => {
       ep.set([pts[a * 3], pts[a * 3 + 1], pts[a * 3 + 2]], i * 6);
       ep.set([pts[b * 3], pts[b * 3 + 1], pts[b * 3 + 2]], i * 6 + 3);
       es[i * 2] = seed[a];
       es[i * 2 + 1] = seed[b];
+      ephase[i * 2] = phase[a];
+      ephase[i * 2 + 1] = phase[b];
     });
     const eg = new THREE.BufferGeometry();
     eg.setAttribute("position", new THREE.BufferAttribute(ep, 3));
     eg.setAttribute("aSeed", new THREE.BufferAttribute(es, 1));
+    eg.setAttribute("aPhase", new THREE.BufferAttribute(ephase, 1));
 
     return { nodeGeo: ng, edgeGeo: eg };
   }, [spec.nodes, spec.neighbours, radius]);
@@ -274,7 +336,9 @@ function Shell({
       uWave: { value: staticTime ?? 0 },
       uSize: { value: spec.pointSize },
       uDpr: { value: 1 },
-      uBase: { value: new THREE.Color(nodeColor) },
+      uTime: { value: 0 },
+      uDrift: { value: driftSeconds },
+      uPalette: { value: palette.map((c) => new THREE.Color(c)) },
       uHot: { value: new THREE.Color(accent) },
     }),
     // Built once; everything below is pushed through the ref instead so a
@@ -286,7 +350,11 @@ function Shell({
   const edgeUniforms = React.useMemo(
     () => ({
       uWave: { value: staticTime ?? 0 },
-      uOpacity: { value: 0.45 },
+      uOpacity: { value: 0.6 },
+      uTime: { value: 0 },
+      uDrift: { value: driftSeconds },
+      uTint: { value: edgeTint },
+      uPalette: { value: palette.map((c) => new THREE.Color(c)) },
       uBase: { value: new THREE.Color(lineColor) },
       uHot: { value: new THREE.Color(accent) },
     }),
@@ -299,19 +367,26 @@ function Shell({
   React.useEffect(() => {
     const n = nodeMat.current;
     const e = edgeMat.current;
+    const colours = palette.map((c) => new THREE.Color(c));
     if (n) {
       n.uniforms.uSize.value = spec.pointSize;
       n.uniforms.uDpr.value = gl.getPixelRatio();
-      n.uniforms.uBase.value.set(nodeColor);
+      n.uniforms.uDrift.value = driftSeconds;
+      n.uniforms.uPalette.value = colours;
       n.uniforms.uHot.value.set(accent);
     }
     if (e) {
+      e.uniforms.uDrift.value = driftSeconds;
+      e.uniforms.uTint.value = edgeTint;
+      e.uniforms.uPalette.value = colours;
       e.uniforms.uBase.value.set(lineColor);
       e.uniforms.uHot.value.set(accent);
     }
-  }, [spec.pointSize, nodeColor, lineColor, accent, gl]);
+  }, [spec.pointSize, palette, lineColor, accent, edgeTint, driftSeconds, gl]);
 
   const target = React.useRef({ x: 0, y: 0 });
+  const spin = React.useRef(0);
+  const yaw = React.useRef(0);
 
   useFrame((state, delta) => {
     const g = group.current;
@@ -321,6 +396,8 @@ function Shell({
     if (staticTime !== undefined) {
       if (n) n.uniforms.uWave.value = staticTime;
       if (e) e.uniforms.uWave.value = staticTime;
+      if (n) n.uniforms.uTime.value = staticTime * driftSeconds;
+      if (e) e.uniforms.uTime.value = staticTime * driftSeconds;
       if (g) g.rotation.set(0.18, staticTime * 0.9, 0);
       return;
     }
@@ -331,27 +408,40 @@ function Shell({
       const step = delta * 0.055;
       if (n) n.uniforms.uWave.value = (n.uniforms.uWave.value + step) % 1;
       if (e) e.uniforms.uWave.value = (e.uniforms.uWave.value + step) % 1;
+      if (n) n.uniforms.uTime.value += delta;
+      if (e) e.uniforms.uTime.value += delta;
     }
 
     if (!g) return;
 
-    if (!paused) g.rotation.y += delta * 0.075;
+    if (!paused) spin.current += delta * 0.075;
+
+    // The parallax is an offset from the layout position, not a replacement
+    // for it — otherwise the shell slides out of its column within seconds.
+    const baseX = stacked ? 0 : -0.55;
+    const k = Math.min(1, delta * 3.2);
 
     if (interactive && !paused) {
-      // Damped, and deliberately shallow. Anything stronger reads as a toy.
-      target.current.x = state.pointer.y * 0.16;
-      target.current.y = state.pointer.x * 0.22;
-      g.rotation.x +=
-        (target.current.x + 0.18 - g.rotation.x) * Math.min(1, delta * 2.4);
+      // Pointer drives a yaw on top of the slow spin, a tilt, and a shift.
+      // `parallax` scales all three; 1 is deliberately noticeable.
+      target.current.x = -state.pointer.y * 0.42 * parallax;
+      target.current.y = state.pointer.x * 0.55 * parallax;
+      yaw.current += (target.current.y - yaw.current) * k;
+      g.rotation.x += (0.18 + target.current.x - g.rotation.x) * k;
       g.position.x +=
-        (target.current.y * 0.5 - g.position.x) * Math.min(1, delta * 2.0);
+        (baseX + state.pointer.x * 0.45 * parallax - g.position.x) * k;
+      g.position.y += (state.pointer.y * 0.22 * parallax - g.position.y) * k;
     } else {
-      g.rotation.x += (0.18 - g.rotation.x) * Math.min(1, delta * 2.4);
+      yaw.current += (0 - yaw.current) * k;
+      g.rotation.x += (0.18 - g.rotation.x) * k;
+      g.position.x += (baseX - g.position.x) * k;
+      g.position.y += (0 - g.position.y) * k;
     }
+    g.rotation.y = spin.current + yaw.current;
   });
 
   return (
-    <group ref={group} position={stacked ? [0, 1.45, -0.6] : [1.55, 0, 0]}>
+    <group ref={group} position={stacked ? [0, 0.2, -0.9] : [-0.55, 0, -0.4]}>
       <lineSegments geometry={edgeGeo}>
         <shaderMaterial
           ref={edgeMat}
@@ -391,13 +481,19 @@ export interface LatticeHeroProps {
   headline: string;
   /** Section links rendered as large text under the headline. */
   links: LatticeHeroLink[];
-  /** Resting colour of the nodes. */
-  nodeColor?: string;
-  /** Resting colour of the edges. */
+  /** Node colours; each node drifts through these. Padded or trimmed to six. */
+  palette?: string[];
+  /** Resting colour of the edges before tinting. */
   lineColor?: string;
   /** Colour a node takes as the pulse passes through it. */
   accent?: string;
-  /** Six-digit hex; alpha suffixes are appended for the scrims. */
+  /** How strongly edges take on the colour of the nodes they join (0–1). */
+  edgeTint?: number;
+  /** Seconds for a node to cycle through the whole palette. */
+  driftSeconds?: number;
+  /** How far the shell yaws, tilts and shifts with the pointer. 0 disables. */
+  parallax?: number;
+  /** Six-digit hex; alpha suffixes are appended for the vignette. */
   background?: string;
   foreground?: string;
   /** Shell radius in world units. */
@@ -421,12 +517,23 @@ function isLight(hex: string): boolean {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.5;
 }
 
+/** After the geodesic dome piece: cyan, mint, violet, blue, lilac, teal. */
+const DOME_PALETTE = ["#22d3ee", "#34d399", "#a78bfa", "#3b82f6", "#c084fc", "#2dd4bf"];
+
+function sixColours(palette: string[]): string[] {
+  const src = palette.length ? palette : DOME_PALETTE;
+  return Array.from({ length: 6 }, (_, i) => src[i % src.length]);
+}
+
 export function LatticeHero({
   headline,
   links,
-  nodeColor = "#c9c9c9",
+  palette = DOME_PALETTE,
   lineColor = "#4d4d4d",
   accent = "#ffffff",
+  edgeTint = 0.75,
+  driftSeconds = 90,
+  parallax = 1,
   background = "#171717",
   foreground = "#fafafa",
   radius = 1.72,
@@ -465,6 +572,7 @@ export function LatticeHero({
   const pinned = staticTime !== undefined;
   const frozen = pinned || !!prefersReduced;
   const additive = !isLight(background);
+  const colours = React.useMemo(() => sixColours(palette), [palette]);
 
   return (
     <section
@@ -489,9 +597,12 @@ export function LatticeHero({
         >
           <Shell
             spec={spec}
-            nodeColor={nodeColor}
+            palette={colours}
             lineColor={lineColor}
             accent={accent}
+            edgeTint={edgeTint}
+            driftSeconds={driftSeconds}
+            parallax={parallax}
             radius={radius}
             staticTime={staticTime}
             paused={frozen}
@@ -501,21 +612,13 @@ export function LatticeHero({
         </Canvas>
       </div>
 
-      {/* Two scrims: stacked, the copy sits below the shell and needs a
-            downward gradient; side by side it sits left of it and needs a
-            sideways one. */}
+      {/* A soft vignette behind the copy keeps the headline legible where the
+          shell's brightest edges pass behind it. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
-          background: `linear-gradient(180deg, ${background}00 0%, ${background}73 26%, ${background}E6 44%, ${background} 62%)`,
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] hidden lg:block"
-        style={{
-          background: `linear-gradient(90deg, ${background} 0%, ${background}E6 34%, ${background}99 52%, ${background}00 74%)`,
+          background: `radial-gradient(42% 48% at 24% 52%, ${background}66 0%, ${background}26 50%, ${background}00 80%)`,
         }}
       />
 
