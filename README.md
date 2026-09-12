@@ -1,4 +1,4 @@
-# Dashiell Badcock — Portfolio
+# dashbad — Portfolio
 
 Personal portfolio website. Built with **Astro 7**, **Tailwind CSS 4**, **React** (islands only), **MDX** and
 **TypeScript**, served in production by **Caddy 2** with heavy media mounted from the host.

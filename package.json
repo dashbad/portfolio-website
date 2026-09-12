@@ -1,9 +1,9 @@
 {
-  "name": "dashiell-badcock-portfolio",
+  "name": "dashbad-portfolio",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Portfolio of Dashiell Badcock",
+  "description": "Portfolio of dashbad",
   "engines": {
     "node": ">=22.12.0"
   },

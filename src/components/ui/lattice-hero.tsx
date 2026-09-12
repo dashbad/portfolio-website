@@ -413,6 +413,77 @@ function Shell({
     };
   }, [gl, interactive]);
 
+  // On touch devices, drive the same input from the device's tilt — but only
+  // where the browser hands it over silently. iOS gates orientation behind a
+  // permission sheet, and a prompt is not worth the effect, so iOS keeps the
+  // slow spin only. Two guards: skip anything that looks like iOS (iPadOS
+  // reports a Mac UA, so touch points are checked too), and where a
+  // `requestPermission` exists, call it outside a user gesture — Chrome
+  // resolves "granted" without a prompt, WebKit rejects without one.
+  React.useEffect(() => {
+    if (!interactive || typeof window === "undefined") return;
+    const DOE = window.DeviceOrientationEvent as
+      | (typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> })
+      | undefined;
+    if (!DOE) return;
+    const ua = navigator.userAgent;
+    const isIOS = /iP(hone|ad|od)/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+    if (isIOS) return;
+    const touch = window.matchMedia("(hover: none)").matches || navigator.maxTouchPoints > 0;
+    if (!touch) return;
+
+    let cancelled = false;
+    let attached = false;
+    const RANGE = 22; // degrees of tilt for full deflection
+    let base: { beta: number; gamma: number } | null = null;
+    let lastT = 0;
+
+    const onOrient = (e: DeviceOrientationEvent) => {
+      if (e.beta == null || e.gamma == null) return;
+      // Rotate the axes so "tilt left/right" stays left/right in landscape.
+      const angle = (screen.orientation?.angle ?? window.orientation ?? 0) as number;
+      let beta = e.beta;
+      let gamma = e.gamma;
+      if (angle === 90) [beta, gamma] = [gamma, -beta];
+      else if (angle === -90 || angle === 270) [beta, gamma] = [-gamma, beta];
+      else if (angle === 180) [beta, gamma] = [-beta, -gamma];
+
+      const now = performance.now();
+      if (!base) {
+        base = { beta, gamma };
+        lastT = now;
+        return;
+      }
+      // Baseline drifts toward the current pose with a ~4 s time constant.
+      const dt = Math.min(0.1, (now - lastT) / 1000);
+      lastT = now;
+      const k = dt / 4;
+      base.beta += (beta - base.beta) * k;
+      base.gamma += (gamma - base.gamma) * k;
+
+      pointer.current.x = Math.max(-1, Math.min(1, (gamma - base.gamma) / RANGE));
+      pointer.current.y = Math.max(-1, Math.min(1, (beta - base.beta) / RANGE));
+    };
+    const attach = () => {
+      if (cancelled || attached) return;
+      attached = true;
+      window.addEventListener("deviceorientation", onOrient, { passive: true });
+    };
+    if (typeof DOE.requestPermission === "function") {
+      DOE.requestPermission()
+        .then((state) => {
+          if (state === "granted") attach();
+        })
+        .catch(() => {});
+    } else {
+      attach();
+    }
+    return () => {
+      cancelled = true;
+      if (attached) window.removeEventListener("deviceorientation", onOrient);
+    };
+  }, [interactive]);
+
   useFrame((_state, delta) => {
     const g = group.current;
     const n = nodeMat.current;
