@@ -388,7 +388,32 @@ function Shell({
   const spin = React.useRef(0);
   const yaw = React.useRef(0);
 
-  useFrame((state, delta) => {
+  // Track the pointer on the window rather than through R3F's canvas events:
+  // the copy and vignette sit over the canvas, so canvas-only tracking goes
+  // dead whenever the cursor crosses the headline.
+  const pointer = React.useRef({ x: 0, y: 0 });
+  React.useEffect(() => {
+    if (!interactive) return;
+    const el = gl.domElement;
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      pointer.current.x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+      pointer.current.y = Math.max(-1, Math.min(1, -(((e.clientY - r.top) / r.height) * 2 - 1)));
+    };
+    const onLeave = () => {
+      pointer.current.x = 0;
+      pointer.current.y = 0;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+    };
+  }, [gl, interactive]);
+
+  useFrame((_state, delta) => {
     const g = group.current;
     const n = nodeMat.current;
     const e = edgeMat.current;
@@ -419,18 +444,21 @@ function Shell({
     // The parallax is an offset from the layout position, not a replacement
     // for it — otherwise the shell slides out of its column within seconds.
     const baseX = stacked ? 0 : -0.55;
-    const k = Math.min(1, delta * 3.2);
+    // ~0.1 s time constant: follows the cursor closely with just enough
+    // smoothing to hide pointer-event jitter.
+    const k = Math.min(1, delta * 10);
+    const px = pointer.current.x;
+    const py = pointer.current.y;
 
     if (interactive && !paused) {
       // Pointer drives a yaw on top of the slow spin, a tilt, and a shift.
       // `parallax` scales all three; 1 is deliberately noticeable.
-      target.current.x = -state.pointer.y * 0.42 * parallax;
-      target.current.y = state.pointer.x * 0.55 * parallax;
+      target.current.x = -py * 0.42 * parallax;
+      target.current.y = px * 0.55 * parallax;
       yaw.current += (target.current.y - yaw.current) * k;
       g.rotation.x += (0.18 + target.current.x - g.rotation.x) * k;
-      g.position.x +=
-        (baseX + state.pointer.x * 0.45 * parallax - g.position.x) * k;
-      g.position.y += (state.pointer.y * 0.22 * parallax - g.position.y) * k;
+      g.position.x += (baseX + px * 0.45 * parallax - g.position.x) * k;
+      g.position.y += (py * 0.22 * parallax - g.position.y) * k;
     } else {
       yaw.current += (0 - yaw.current) * k;
       g.rotation.x += (0.18 - g.rotation.x) * k;
@@ -551,6 +579,48 @@ export function LatticeHero({
 
   React.useEffect(() => setMounted(true), []);
 
+  // The section links rest under a slight blur that clears as the cursor
+  // approaches, measured from each link's edge so hovering anywhere on the
+  // link is fully sharp. Hover-capable pointers only; touch stays sharp.
+  const linkRefs = React.useRef<Array<HTMLAnchorElement | null>>([]);
+  React.useEffect(() => {
+    if (prefersReduced || !window.matchMedia("(hover: hover)").matches) return;
+    const MAX_BLUR = 2.5;
+    const INNER = 24;
+    const RADIUS = 260;
+    const apply = (x: number, y: number) => {
+      for (const el of linkRefs.current) {
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const dx = Math.max(0, Math.abs(x - (r.left + r.width / 2)) - r.width / 2);
+        const dy = Math.max(0, Math.abs(y - (r.top + r.height / 2)) - r.height / 2);
+        const t = Math.min(1, Math.max(0, (Math.hypot(dx, dy) - INNER) / RADIUS));
+        el.style.filter = t === 0 ? "none" : `blur(${(MAX_BLUR * t).toFixed(2)}px)`;
+      }
+    };
+    let raf = 0;
+    let last = { x: -1e4, y: -1e4 };
+    const onMove = (e: PointerEvent) => {
+      last = { x: e.clientX, y: e.clientY };
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          apply(last.x, last.y);
+        });
+      }
+    };
+    const onLeave = () => apply(-1e4, -1e4);
+    apply(-1e4, -1e4);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      for (const el of linkRefs.current) if (el) el.style.filter = "";
+    };
+  }, [prefersReduced]);
+
   const quality = React.useSyncExternalStore(
     subscribeToViewport,
     detectQuality,
@@ -643,11 +713,14 @@ export function LatticeHero({
             aria-label="Sections"
             className="flex flex-col items-center gap-1 lg:items-start"
           >
-            {links.map((link) => (
+            {links.map((link, i) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="group inline-flex items-center gap-3 text-[clamp(1.5rem,3.2vw,2.5rem)] font-medium tracking-tight text-muted-foreground transition-colors hover:text-foreground"
+                ref={(el) => {
+                  linkRefs.current[i] = el;
+                }}
+                className="group inline-flex items-center gap-3 text-[clamp(1.5rem,3.2vw,2.5rem)] font-medium tracking-tight text-muted-foreground transition-[color,filter] duration-200 will-change-[filter] hover:text-foreground"
               >
                 <span>{link.label}</span>
                 <span
