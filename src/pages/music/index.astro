@@ -1,18 +1,27 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import SoundCloudPlayer from '../../components/SoundCloudPlayer.astro';
-import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
-import { getPublishedMusic } from '../../lib/content';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SoundCloudPlayer from "../../components/SoundCloudPlayer.astro";
+import YouTubeEmbed from "../../components/YouTubeEmbed.astro";
+import { getPublishedMusic } from "../../lib/content";
 
 const tracks = await getPublishedMusic();
+
+// Latest-video embed from the YouTube channel. Off for now; set to true to
+// bring the section back (YouTubeEmbed fetches the channel feed at build).
+const SHOW_YOUTUBE = false;
 ---
 
 <BaseLayout title="Music">
-  <section class="mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-14" aria-label="Tracks">
+  <section
+    class="mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-14"
+    aria-label="Tracks"
+  >
     <header class="mb-12">
       <h1 class="text-4xl sm:text-5xl">Music</h1>
       <p class="mt-5 text-lg leading-relaxed text-muted-foreground">
-        I have been DJing for over 25 years. Below you can find my latest mixes. They are sorted in reverse chronological order. Tracklists can be found in the description for each mix if you click through to Soundcloud.
+        I have been DJing for over 25 years. Below you can find my latest mixes.
+        They are sorted in reverse chronological order. Tracklists can be found
+        in the description for each mix if you click through to Soundcloud.
       </p>
     </header>
 
@@ -21,19 +30,35 @@ const tracks = await getPublishedMusic();
         tracks.map((track) => (
           <li>
             <h2 class="mb-4 text-2xl sm:text-3xl">{track.data.title}</h2>
-            <SoundCloudPlayer embed={track.data.soundcloudEmbedIframe} title={track.data.title} fallbackUrl={track.data.soundcloudUrl} />
+            <SoundCloudPlayer
+              embed={track.data.soundcloudEmbedIframe}
+              title={track.data.title}
+              fallbackUrl={track.data.soundcloudUrl}
+            />
           </li>
         ))
       }
     </ul>
 
-    <section class="mt-20 border-t border-border pt-12" aria-labelledby="youtube-heading">
-      <h2 id="youtube-heading" class="mb-6 text-2xl sm:text-3xl">
-        <a href="https://www.youtube.com/@dashbad" target="_blank" rel="me noopener noreferrer" class="transition-colors hover:text-muted-foreground">
-          On YouTube
-        </a>
-      </h2>
-      <YouTubeEmbed />
-    </section>
+    {
+      SHOW_YOUTUBE && (
+        <section
+          class="mt-20 border-t border-border pt-12"
+          aria-labelledby="youtube-heading"
+        >
+          <h2 id="youtube-heading" class="mb-6 text-2xl sm:text-3xl">
+            <a
+              href="https://www.youtube.com/@dashbad"
+              target="_blank"
+              rel="me noopener noreferrer"
+              class="transition-colors hover:text-muted-foreground"
+            >
+              On YouTube
+            </a>
+          </h2>
+          <YouTubeEmbed />
+        </section>
+      )
+    }
   </section>
 </BaseLayout>
