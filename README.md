@@ -56,6 +56,24 @@ image.
 If a file is missing the components render a styled "media offline" placeholder rather than a
 broken element, so the site stays presentable while media is being produced.
 
+### Producing hero loops and stills
+
+`scripts/hero-media.sh` turns raw Pixel footage into the exact files the art pages expect
+(needs `ffmpeg`, `brew install ffmpeg`):
+
+```bash
+# hero-loop.mp4 + poster.jpg (first frame of the loop) into public/media/art/<slug>/
+scripts/hero-media.sh loop ~/Downloads/PXL_20260920_203000.mp4 geodesic-dome --start 4 --duration 8 --aspect 21:9
+
+# loop whose animation period is not exact: cross-fade the tail into the head
+scripts/hero-media.sh loop clip.mp4 comb-jelly --duration 10 --xfade 0.8
+
+# gallery still: resized, EXIF and HDR gain map stripped
+scripts/hero-media.sh photo ~/Downloads/PXL_20260920_203100.jpg public/media/art/geodesic-dome/build-1.jpg
+```
+
+Shoot video with the Pixel's 10-bit HDR video switched off; `--help` lists every option.
+
 ```bash
 docker compose build
 docker compose up -d     # http://localhost:8080
