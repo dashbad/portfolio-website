@@ -36,6 +36,8 @@
 #   --quality N      JPEG quality 1 (best) – 31                  (default 3)
 #   --push EV        brighten by EV stops, e.g. 1.3 for a shot that
 #                    came out dark (negative darkens)             (default 0)
+#   --rotate DEG     straighten: positive turns the image anticlockwise; the
+#                    black corners are trimmed automatically      (default 0)
 #
 # Shoot in SDR (10-bit HDR video OFF on the Pixel). If an HDR clip is given the
 # script tone-maps it to SDR when this ffmpeg has the zscale filter, and refuses
@@ -238,12 +240,13 @@ cmd_photo() {
   [[ $# -ge 2 ]] || usage 1
   local in="$1" out="$2"; shift 2
   [[ -f "$in" ]] || die "no such file: $in"
-  local width=2000 quality=3 push=0
+  local width=2000 quality=3 push=0 rotate=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --width)   width="$2";   shift 2 ;;
       --quality) quality="$2"; shift 2 ;;
       --push)    push="$2";    shift 2 ;;
+      --rotate)  rotate="$2";  shift 2 ;;
       -h|--help) usage ;;
       *) die "unknown option: $1" ;;
     esac
@@ -251,7 +254,13 @@ cmd_photo() {
   mkdir -p "$(dirname "$out")"
   # -map_metadata -1 drops EXIF, GPS and the Ultra HDR gain map so browsers show
   # the same SDR image everywhere. Orientation is applied before it is dropped.
-  local vf="$(scale_expr "$width")"
+  local vf=""
+  if [[ "$rotate" != "0" ]]; then
+    # rotate, then trim the wedges the rotation leaves at the edges
+    vf+="rotate=-(${rotate})*PI/180:c=black,"
+    vf+="crop=w='trunc((iw-ih*abs(sin(${rotate}*PI/180)))/2)*2':h='trunc((ih-iw*abs(sin(${rotate}*PI/180)))/2)*2',"
+  fi
+  vf+="$(scale_expr "$width")"
   if [[ "$push" != "0" ]]; then
     vf+=",exposure=exposure=${push}"
     info "pushing exposure by ${push} EV"
