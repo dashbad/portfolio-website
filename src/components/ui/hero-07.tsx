@@ -1,7 +1,7 @@
 /**
  * Hero07 — adapted from 21st.dev "Editorial Image Hero" (@felipemenezes098).
- * Full-width media on top, then a tagline on the left and the title and
- * description on the right. Rendered statically: the motion, text balancer
+ * Full-width media on top, then title, tagline and description in one
+ * left-aligned column. Rendered statically: the motion, text balancer
  * and call-to-action buttons from the original were removed.
  */
 import type { ReactNode } from 'react';
@@ -62,17 +62,14 @@ export function Hero07({
     <section className="relative isolate w-full pt-2 sm:pt-4">
       {media && <div className="mx-auto w-full max-w-7xl px-6 sm:px-10">{media}</div>}
 
-      <div className={cn('mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 sm:px-10 lg:grid-cols-12', vs.copy)}>
-        {tagline && (
-          <div className="flex lg:col-span-4 lg:col-start-1 lg:items-start">
-            <p className={cn('max-w-xs leading-relaxed tracking-tight text-muted-foreground', vs.tagline)}>{tagline}</p>
-          </div>
-        )}
-
-        <div className={cn('flex flex-col items-start lg:col-span-6 lg:col-start-7', vs.header)}>
+      <div className={cn('mx-auto w-full max-w-7xl px-6 sm:px-10', vs.copy)}>
+        <div className={cn('flex max-w-3xl flex-col items-start', vs.header)}>
           <h1 className={cn('text-balance font-semibold tracking-tight text-foreground', vs.title)}>{title}</h1>
+          {tagline && (
+            <p className={cn('-mt-2 leading-relaxed tracking-tight text-muted-foreground', vs.tagline)}>{tagline}</p>
+          )}
           {description && (
-            <p className={cn('max-w-xl whitespace-pre-line leading-relaxed text-muted-foreground', vs.description)}>
+            <p className={cn('whitespace-pre-line leading-relaxed text-muted-foreground', vs.description)}>
               {description}
             </p>
           )}

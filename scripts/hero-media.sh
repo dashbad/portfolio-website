@@ -10,6 +10,7 @@
 #   hero-loop.mp4   H.264, yuv420p, faststart, silent   (what VideoPlayer plays)
 #   hero-loop.webm  VP9 (only with --webm; the player does not use it yet)
 #   poster.jpg      the exact first frame of hero-loop.mp4, same crop and size
+#   tile.jpg        4:3 still of the same frame, 1600 wide, for the art index tile
 #
 # Loop options:
 #   --start SEC      trim in-point in the source clip            (default 0)
@@ -19,6 +20,9 @@
 #   --aspect W:H     centre-crop to this aspect, e.g. 21:9      (default: keep source)
 #   --zoom N         centre-crop to 1/N of the frame first, e.g. 1.4 to tighten a
 #                    wide 4K shot without moving the tripod      (default 1)
+#   --shift X:Y      move the crop window by fractions of the frame, e.g. 0.03:-0.04
+#                    nudges it right and up. Needs --zoom or --aspect for room.
+#   --rotate DEG     straighten: positive turns the image anticlockwise (default 0)
 #   --width PX       max output width, never upscaled           (default 1920)
 #   --fps N          output frame rate                           (default 30)
 #   --crf N          x264 quality, lower = bigger/better         (default 21)
@@ -69,6 +73,7 @@ cmd_loop() {
   [[ -f "$in" ]] || die "no such file: $in"
 
   local start=0 duration="" xfade=0 aspect="" zoom=1 width=1920 fps=30 crf=21 push=0
+  local shift="0:0" rotate=0
   local webm=0 out="" dry=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -77,6 +82,8 @@ cmd_loop() {
       --xfade)    xfade="$2";    shift 2 ;;
       --aspect)   aspect="$2";   shift 2 ;;
       --zoom)     zoom="$2";     shift 2 ;;
+      --shift)    shift="$2";    shift 2 ;;
+      --rotate)   rotate="$2";   shift 2 ;;
       --width)    width="$2";    shift 2 ;;
       --fps)      fps="$2";      shift 2 ;;
       --crf)      crf="$2";      shift 2 ;;
@@ -128,15 +135,26 @@ cmd_loop() {
   if [[ "$push" != "0" ]]; then
     vf+="exposure=exposure=${push},"
   fi
+  [[ "$shift" =~ ^-?[0-9.]+:-?[0-9.]+$ ]] || die "--shift must look like 0.03:-0.04"
+  local sx="${shift%%:*}" sy="${shift##*:}"
+  # crop offsets: centred, then nudged by the shift (crop clamps to the frame).
+  # The nudge is applied once: in the zoom crop when there is one, else later.
+  local off="x='(iw-ow)/2+(${sx})*iw':y='(ih-oh)/2+(${sy})*ih'"
+  local off_rest="$off"
+  if [[ "$rotate" != "0" ]]; then
+    vf+="rotate=-(${rotate})*PI/180:c=black,"
+  fi
   if [[ "$zoom" != "1" ]]; then
     awk -v z="$zoom" 'BEGIN{exit !(z >= 1)}' || die "--zoom must be 1 or more"
-    vf+="crop=w='trunc(iw/${zoom}/2)*2':h='trunc(ih/${zoom}/2)*2',"
+    vf+="crop=w='trunc(iw/${zoom}/2)*2':h='trunc(ih/${zoom}/2)*2':${off},"
+    off_rest="x='(iw-ow)/2':y='(ih-oh)/2'"
   fi
+  local pre_aspect="$vf"
   if [[ -n "$aspect" ]]; then
     [[ "$aspect" =~ ^[0-9.]+:[0-9.]+$ ]] || die "--aspect must look like 21:9"
     local aw="${aspect%%:*}" ah="${aspect##*:}"
-    # keep the largest centred window with the requested aspect
-    vf+="crop=w='trunc(min(iw,ih*${aw}/${ah})/2)*2':h='trunc(min(ih,iw*${ah}/${aw})/2)*2',"
+    # keep the largest window with the requested aspect, centred then nudged
+    vf+="crop=w='trunc(min(iw,ih*${aw}/${ah})/2)*2':h='trunc(min(ih,iw*${ah}/${aw})/2)*2':${off_rest},"
   fi
   vf+="$(scale_expr "$width"),fps=${fps},format=yuv420p,setsar=1"
 
@@ -160,7 +178,12 @@ cmd_loop() {
                 -filter_complex "$graph" -map '[v]' -an -sn -dn -map_metadata -1)
   local gop=$(( fps * 2 ))
 
-  local mp4="$out/hero-loop.mp4" poster="$out/poster.jpg" webmf="$out/hero-loop.webm"
+  local mp4="$out/hero-loop.mp4" poster="$out/poster.jpg" tile="$out/tile.jpg" webmf="$out/hero-loop.webm"
+  # the tile is the same source frame as the poster, cropped 4:3 instead of the hero aspect
+  local poster_t; poster_t="$(awk -v s="$start" -v f="$xfade" 'BEGIN{printf "%.3f", s+f}')"
+  local enc_tile=(ffmpeg -hide_banner -loglevel error -y -ss "$poster_t" -i "$in" -frames:v 1
+    -vf "${pre_aspect}crop=w='trunc(min(iw,ih*4/3)/2)*2':h='trunc(min(ih,iw*3/4)/2)*2':${off_rest},scale=1600:-2,format=yuvj420p"
+    -update 1 -q:v 3 -map_metadata -1 "$tile")
   local enc_mp4=(ffmpeg "${common[@]}"
     -c:v libx264 -preset slow -crf "$crf" -profile:v high -level 4.1
     -g "$gop" -keyint_min "$gop" -sc_threshold 0
@@ -173,12 +196,13 @@ cmd_loop() {
     -g "$gop" -pix_fmt yuv420p "$webmf")
 
   info "source   $in  (${src_dur}s$( (( hdr )) && printf ", HDR" ))"
-  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  zoom=${zoom}  push=${push}EV  ≤${width}px @ ${fps}fps"
+  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  zoom=${zoom}  shift=${shift}  rotate=${rotate}°  push=${push}EV  ≤${width}px @ ${fps}fps"
   info "output   $out/"
 
   if (( dry )); then
     printf '%q ' "${enc_mp4[@]}";    printf '\n\n'
-    printf '%q ' "${enc_poster[@]}"; printf '\n'
+    printf '%q ' "${enc_poster[@]}"; printf '\n\n'
+    printf '%q ' "${enc_tile[@]}";   printf '\n'
     (( webm )) && { printf '\n'; printf '%q ' "${enc_webm[@]}"; printf '\n'; }
     return 0
   fi
@@ -188,6 +212,8 @@ cmd_loop() {
   "${enc_mp4[@]}"
   info "extracting poster.jpg from the first frame"
   "${enc_poster[@]}"
+  info "cutting tile.jpg (4:3) from the same frame"
+  "${enc_tile[@]}"
   if (( webm )); then
     info "encoding hero-loop.webm (VP9, this is slow)"
     "${enc_webm[@]}"
@@ -197,10 +223,12 @@ cmd_loop() {
   ffprobe -v error -select_streams v:0 \
     -show_entries stream=width,height,r_frame_rate,bit_rate:format=duration,size \
     -of default=nw=1 "$mp4" | sed 's/^/  mp4  /'
-  ffprobe -v error -show_entries stream=width,height -of default=nw=1 "$poster" | sed 's/^/  jpg  /'
+  ffprobe -v error -show_entries stream=width,height -of default=nw=1 "$poster" | sed 's/^/  poster  /'
+  ffprobe -v error -show_entries stream=width,height -of default=nw=1 "$tile" | sed 's/^/  tile    /'
   echo
   info "frontmatter for src/content/art/${slug}.mdx:"
-  printf '  heroVideo: /media/art/%s/hero-loop.mp4\n  heroPoster: /media/art/%s/poster.jpg\n' "$slug" "$slug"
+  printf '  heroVideo: /media/art/%s/hero-loop.mp4?v=DATE\n  heroPoster: /media/art/%s/poster.jpg?v=DATE\n  heroTile: /media/art/%s/tile.jpg?v=DATE\n' "$slug" "$slug" "$slug"
+  info "bump ?v= whenever a file is replaced under the same name: Caddy caches /media for 7 days"
 }
 
 # ---------------------------------------------------------------------------
