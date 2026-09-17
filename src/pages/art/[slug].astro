@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { entry, prev, next } = Astro.props;
-const { title, year, summary, heroVideo, heroPoster, specs, gallery } = entry.data;
+const { title, year, summary, heroVideo, heroPoster, heroTile, specs, gallery } = entry.data;
 const { Content } = await render(entry);
 
 const galleryImages = gallery.map((img, i) => ({
@@ -39,7 +39,7 @@ const specItems = (
   .map(([label, value]) => ({ label, value }));
 ---
 
-<BaseLayout title={title} description={summary} image={heroPoster ?? undefined}>
+<BaseLayout title={title} description={summary} image={heroTile ?? heroPoster ?? undefined}>
   <article>
     <Hero07 tagline={String(year)} title={title} description={summary} landscapeImage={heroPoster ?? undefined} landscapeAlt={title}>
       {heroVideo && <VideoPlayer src={heroVideo} poster={heroPoster ?? undefined} mode="ambient" title={`${title} — ambient loop`} aspect="21 / 9" />}

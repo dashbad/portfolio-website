@@ -22,6 +22,7 @@
 #   --width PX       max output width, never upscaled           (default 1920)
 #   --fps N          output frame rate                           (default 30)
 #   --crf N          x264 quality, lower = bigger/better         (default 21)
+#   --push EV        brighten the whole clip by EV stops         (default 0)
 #   --webm           also encode a VP9 .webm
 #   --out DIR        output directory      (default public/media/art/<slug>)
 #   --dry-run        print the ffmpeg commands without running them
@@ -67,7 +68,7 @@ cmd_loop() {
   local in="$1" slug="$2"; shift 2
   [[ -f "$in" ]] || die "no such file: $in"
 
-  local start=0 duration="" xfade=0 aspect="" zoom=1 width=1920 fps=30 crf=21
+  local start=0 duration="" xfade=0 aspect="" zoom=1 width=1920 fps=30 crf=21 push=0
   local webm=0 out="" dry=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -79,6 +80,7 @@ cmd_loop() {
       --width)    width="$2";    shift 2 ;;
       --fps)      fps="$2";      shift 2 ;;
       --crf)      crf="$2";      shift 2 ;;
+      --push)     push="$2";     shift 2 ;;
       --webm)     webm=1;        shift ;;
       --out)      out="$2";      shift 2 ;;
       --dry-run)  dry=1;         shift ;;
@@ -122,6 +124,9 @@ cmd_loop() {
        settings (recommended: what you see is what the browser gets), or install an
        ffmpeg built with zimg (brew reinstall ffmpeg, or a full build)."
     fi
+  fi
+  if [[ "$push" != "0" ]]; then
+    vf+="exposure=exposure=${push},"
   fi
   if [[ "$zoom" != "1" ]]; then
     awk -v z="$zoom" 'BEGIN{exit !(z >= 1)}' || die "--zoom must be 1 or more"
@@ -168,7 +173,7 @@ cmd_loop() {
     -g "$gop" -pix_fmt yuv420p "$webmf")
 
   info "source   $in  (${src_dur}s$( (( hdr )) && printf ", HDR" ))"
-  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  zoom=${zoom}  ≤${width}px @ ${fps}fps"
+  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  zoom=${zoom}  push=${push}EV  ≤${width}px @ ${fps}fps"
   info "output   $out/"
 
   if (( dry )); then

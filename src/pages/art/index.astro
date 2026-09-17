@@ -6,7 +6,7 @@ import { getPublishedArt } from '../../lib/content';
 const works = await getPublishedArt();
 const items = works.map((work) => ({
   href: `/art/${work.id}/`,
-  image: work.data.heroPoster ?? '',
+  image: work.data.heroTile ?? work.data.heroPoster ?? '',
   caption: work.data.title,
   sub: String(work.data.year),
 }));
