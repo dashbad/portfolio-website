@@ -27,6 +27,8 @@
 # PHOTO options:
 #   --width PX       max width, never upscaled                   (default 2000)
 #   --quality N      JPEG quality 1 (best) – 31                  (default 3)
+#   --push EV        brighten by EV stops, e.g. 1.3 for a shot that
+#                    came out dark (negative darkens)             (default 0)
 #
 # Shoot in SDR (10-bit HDR video OFF on the Pixel). If an HDR clip is given the
 # script tone-maps it to SDR when this ffmpeg has the zscale filter, and refuses
@@ -196,11 +198,12 @@ cmd_photo() {
   [[ $# -ge 2 ]] || usage 1
   local in="$1" out="$2"; shift 2
   [[ -f "$in" ]] || die "no such file: $in"
-  local width=2000 quality=3
+  local width=2000 quality=3 push=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --width)   width="$2";   shift 2 ;;
       --quality) quality="$2"; shift 2 ;;
+      --push)    push="$2";    shift 2 ;;
       -h|--help) usage ;;
       *) die "unknown option: $1" ;;
     esac
@@ -208,8 +211,13 @@ cmd_photo() {
   mkdir -p "$(dirname "$out")"
   # -map_metadata -1 drops EXIF, GPS and the Ultra HDR gain map so browsers show
   # the same SDR image everywhere. Orientation is applied before it is dropped.
+  local vf="$(scale_expr "$width")"
+  if [[ "$push" != "0" ]]; then
+    vf+=",exposure=exposure=${push}"
+    info "pushing exposure by ${push} EV"
+  fi
   ffmpeg -hide_banner -loglevel error -y -i "$in" \
-    -vf "$(scale_expr "$width"),format=yuvj420p" \
+    -vf "${vf},format=yuvj420p" \
     -frames:v 1 -update 1 -q:v "$quality" -map_metadata -1 "$out"
   info "wrote $out  ($(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x "$out"), $(du -h "$out" | cut -f1))"
 }

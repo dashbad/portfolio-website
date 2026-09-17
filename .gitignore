@@ -31,3 +31,6 @@ host-media/*
 
 # Claude Code local settings (may contain secrets)
 .claude/settings.local.json
+
+# Raw camera test shots, never committed
+Sample Photography/

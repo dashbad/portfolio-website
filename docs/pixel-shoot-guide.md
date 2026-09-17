@@ -89,14 +89,21 @@ Without moving anything, swipe to **Photo**, tap the settings gear, open **Pro**
 | Ultra HDR | Off |
 | Night Sight | Off (tap the moon icon if it appears) |
 | Lens | 1x |
-| ISO | 50 to 100 |
-| Shutter | 1/30 to 1/60 (tripod, so slow is fine) |
+| ISO | 100 (the minimum of 42 is one and a half stops too dark) |
+| Shutter | 1/30 for the first frame, then 1/15 and 1/8 |
 | White balance | Same fixed value as the video |
 | Focus | Manual, on the front face of the piece |
 
-Take three frames: one exposed for the LEDs (no clipping), one a stop brighter
-for the form, one in between. Use the timer or volume button so pressing the
-screen doesn't shake the phone.
+Judge exposure on the phone screen at full brightness: the brightest cells
+should be just short of pure white and the piece should look as bright as it
+does in the room. If it looks dim on screen it is underexposed. Take three
+frames at 1/30, 1/15 and 1/8 with ISO 100, and pick the brightest one that
+keeps colour in the hottest cells. Use the timer or volume button so pressing
+the screen doesn't shake the phone.
+
+RAW is switched on, so a frame that is a little dark is recoverable: the DNG
+takes a push of one and a half stops in Google Photos or Lightroom without
+visible noise, and even the JPEG takes about one stop (see section 8).
 
 Then, handheld, take a few gallery shots: details, the mounting, the piece in
 its room. Keep Pro mode and the same white balance.
@@ -110,7 +117,7 @@ its room. Keep Pro mode and the same white balance.
 [ ] Tripod level at fixture height, landscape, 1x, breathing room in frame
 [ ] Video: 4K 30, HDR off, Boost on, exposure locked and pulled down, WB fixed
 [ ] 30–40 s recorded, reviewed for flicker and wobble
-[ ] Photo: Pro, 50 MP, RAW+JPEG, ISO 100, 1/60, same WB, 3 exposures
+[ ] Photo: Pro, 50 MP, RAW+JPEG, ISO 100, same WB, 1/30 + 1/15 + 1/8
 [ ] Handheld gallery shots
 ```
 
@@ -130,6 +137,9 @@ scripts/hero-media.sh loop ~/Downloads/PXL_xxx.mp4 comb-jelly --start 4 --durati
 
 # Gallery stills, one per file.
 scripts/hero-media.sh photo ~/Downloads/PXL_yyy.jpg public/media/art/geodesic-dome/mounted-1.jpg
+
+# A still that came out too dark: brighten it by 1.3 stops while resizing.
+scripts/hero-media.sh photo ~/Downloads/PXL_yyy.jpg public/media/art/geodesic-dome/mounted-1.jpg --push 1.3
 ```
 
 The loop command writes `hero-loop.mp4` and `poster.jpg` into
@@ -141,6 +151,7 @@ result in `astro dev`, then copy the folder to `host-media/` on the server.
 | Symptom | Fix |
 |---|---|
 | LEDs are white instead of coloured | Dim the fixture, pull exposure down further |
+| Whole photo dark, piece looks dim | ISO or shutter too low. ISO 100 at 1/30 is the floor; push the DNG +1 to +1.5 EV, or use `--push` |
 | Orange or muddy background | A warm light is still on somewhere; find it |
 | Colours drift during the clip | White balance was on Auto; fix it |
 | Rolling bands or flicker | Dim the fixture; use a slower shutter (1/30 to 1/60) |
