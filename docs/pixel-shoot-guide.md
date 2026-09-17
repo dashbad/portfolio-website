@@ -73,9 +73,24 @@ Then on the live view:
 5. Review at full screen. Look for flicker, pulsing brightness or a wobble.
    If the LEDs show rolling bands, dim the fixture a little and record again.
 
-**Full manual alternative:** the free Blackmagic Camera app gives real manual
-video control. Use 4K, 30 fps, shutter 1/60, ISO 100 to 400, white balance
-4500 K, H.264 or H.265, HDR/log off.
+**Blackmagic Camera (preferred, tested 17 Sep 2026):** the free app gives real
+manual video control and the first test clip came out clean and steady.
+
+| Setting | Value |
+|---|---|
+| Resolution / frame rate | 4K, 30 fps |
+| Codec | H.265 (HEVC), Rec.709, HDR/log off |
+| ISO | 400 (go to 640 or 800 if the animation has no white cells) |
+| Shutter | 1/30 (360°) on a tripod |
+| White balance | 4500 K, tint 15, locked |
+| Focus | Tap the piece, then lock it |
+| Framing | Piece about two-thirds of the frame height: the 21:9 crop keeps 76 % of the height, so anything taller gets cut. Use `--zoom` only when the piece is small |
+
+Exposure rule: the brightest cells should sit just under white. If the whole
+piece looks dark, the fix is the animation, not the camera: swap white and
+pale cells for saturated colours of similar brightness, and avoid palettes
+where most cells are off. Then the exposure can come up a stop without
+clipping.
 
 ## 6. Photo settings (Pixel Camera app)
 
@@ -115,7 +130,7 @@ its room. Keep Pro mode and the same white balance.
 [ ] Room dark, background clear or covered, fill lamp dim and cool
 [ ] Lens cleaned
 [ ] Tripod level at fixture height, landscape, 1x, breathing room in frame
-[ ] Video: 4K 30, HDR off, Boost on, exposure locked and pulled down, WB fixed
+[ ] Video: Blackmagic 4K 30, HEVC, ISO 400, 1/30, 4500 K, focus locked
 [ ] 30–40 s recorded, reviewed for flicker and wobble
 [ ] Photo: Pro, 50 MP, RAW+JPEG, ISO 100, same WB, 1/30 + 1/15 + 1/8
 [ ] Handheld gallery shots
@@ -129,8 +144,8 @@ Copy the files off the phone, then from the repo root:
 
 ```bash
 # Hero loop + poster. --duration is the animation period; --start skips the
-# first few seconds while the phone settled.
-scripts/hero-media.sh loop ~/Downloads/PXL_xxx.mp4 geodesic-dome --start 4 --duration 8 --aspect 21:9
+# first few seconds while the phone settled. --zoom 1.5 tightens a wide 4K shot.
+scripts/hero-media.sh loop ~/Downloads/A001_xxx.mp4 geodesic-dome --start 4 --duration 8 --aspect 21:9 --zoom 1.5
 
 # If the period isn't exact, cross-fade the end into the start instead.
 scripts/hero-media.sh loop ~/Downloads/PXL_xxx.mp4 comb-jelly --start 4 --duration 10 --xfade 0.8 --aspect 21:9

@@ -17,6 +17,8 @@
 #   --xfade SEC      cross-fade the tail into the head for a seamless loop when the
 #                    period is not exact. 0.5–1.0 s is plenty.  (default 0 = off)
 #   --aspect W:H     centre-crop to this aspect, e.g. 21:9      (default: keep source)
+#   --zoom N         centre-crop to 1/N of the frame first, e.g. 1.4 to tighten a
+#                    wide 4K shot without moving the tripod      (default 1)
 #   --width PX       max output width, never upscaled           (default 1920)
 #   --fps N          output frame rate                           (default 30)
 #   --crf N          x264 quality, lower = bigger/better         (default 21)
@@ -65,7 +67,7 @@ cmd_loop() {
   local in="$1" slug="$2"; shift 2
   [[ -f "$in" ]] || die "no such file: $in"
 
-  local start=0 duration="" xfade=0 aspect="" width=1920 fps=30 crf=21
+  local start=0 duration="" xfade=0 aspect="" zoom=1 width=1920 fps=30 crf=21
   local webm=0 out="" dry=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -73,6 +75,7 @@ cmd_loop() {
       --duration) duration="$2"; shift 2 ;;
       --xfade)    xfade="$2";    shift 2 ;;
       --aspect)   aspect="$2";   shift 2 ;;
+      --zoom)     zoom="$2";     shift 2 ;;
       --width)    width="$2";    shift 2 ;;
       --fps)      fps="$2";      shift 2 ;;
       --crf)      crf="$2";      shift 2 ;;
@@ -120,6 +123,10 @@ cmd_loop() {
        ffmpeg built with zimg (brew reinstall ffmpeg, or a full build)."
     fi
   fi
+  if [[ "$zoom" != "1" ]]; then
+    awk -v z="$zoom" 'BEGIN{exit !(z >= 1)}' || die "--zoom must be 1 or more"
+    vf+="crop=w='trunc(iw/${zoom}/2)*2':h='trunc(ih/${zoom}/2)*2',"
+  fi
   if [[ -n "$aspect" ]]; then
     [[ "$aspect" =~ ^[0-9.]+:[0-9.]+$ ]] || die "--aspect must look like 21:9"
     local aw="${aspect%%:*}" ah="${aspect##*:}"
@@ -161,7 +168,7 @@ cmd_loop() {
     -g "$gop" -pix_fmt yuv420p "$webmf")
 
   info "source   $in  (${src_dur}s$( (( hdr )) && printf ", HDR" ))"
-  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  ≤${width}px @ ${fps}fps"
+  info "loop     start=${start}s  duration=${duration}s  xfade=${xfade}s  aspect=${aspect:-source}  zoom=${zoom}  ≤${width}px @ ${fps}fps"
   info "output   $out/"
 
   if (( dry )); then
