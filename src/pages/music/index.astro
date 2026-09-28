@@ -6,9 +6,9 @@ import { getPublishedMusic } from "../../lib/content";
 
 const tracks = await getPublishedMusic();
 
-// Latest-video embed from the YouTube channel. Off for now; set to true to
-// bring the section back (YouTubeEmbed fetches the channel feed at build).
-const SHOW_YOUTUBE = false;
+// Latest-video embed from the YouTube channel. Set to false to hide it
+// (YouTubeEmbed fetches the channel feed at build to find the newest video).
+const SHOW_YOUTUBE = true;
 ---
 
 <BaseLayout title="Music">

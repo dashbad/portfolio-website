@@ -6,8 +6,10 @@ interface Props {
 }
 
 const CHANNEL_ID = 'UCstFin6nlhDxRhG8d9mNtGg';
-const FALLBACK_ID = 'uIDKLJzj_5Q';
-const FALLBACK_TITLE = 'Underground Techno & Breakbeats - 6 Hour DJ Set';
+const HANDLE = 'dashbad';
+// Last known newest upload, used only if both live sources below fail.
+const FALLBACK_ID = 'vCAz1QAtIH0';
+const FALLBACK_TITLE = 'Progressive House 60 minute DJ Mix';
 
 let { videoId, title, class: className } = Astro.props;
 
@@ -20,24 +22,67 @@ function decodeXml(str: string): string {
     .replace(/&gt;/g, '>');
 }
 
-if (!videoId) {
-  try {
-    const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`, {
-      signal: AbortSignal.timeout(4000),
-    });
-    if (res.ok) {
-      const xml = await res.text();
-      const idMatch = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
-      const titleMatches = xml.match(/<title>([^<]+)<\/title>/g);
-      if (idMatch && idMatch[1]) {
-        videoId = idMatch[1];
-        if (!title && titleMatches && titleMatches[1]) {
-          title = decodeXml(titleMatches[1].replace(/<\/?title>/g, ''));
-        }
-      }
+const BROWSER_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36';
+
+/** Newest upload from the channel's RSS feed. */
+async function fromFeed(): Promise<{ id: string; title?: string } | null> {
+  const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`, {
+    signal: AbortSignal.timeout(4000),
+  });
+  if (!res.ok) return null;
+  const xml = await res.text();
+  const id = xml.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
+  if (!id) return null;
+  // The first <title> is the feed's own; the second is the newest entry.
+  const titles = xml.match(/<title>([^<]+)<\/title>/g) ?? [];
+  const entryTitle = titles[1]?.replace(/<\/?title>/g, '');
+  return { id, title: entryTitle ? decodeXml(entryTitle) : undefined };
+}
+
+/**
+ * Newest upload from the channel's Videos tab. The feed endpoint has been
+ * flaky (404/500 for days at a time), while the tab page is reliable: its
+ * first richItemRenderer is the most recent upload.
+ */
+async function fromVideosTab(): Promise<{ id: string; title?: string } | null> {
+  const res = await fetch(`https://www.youtube.com/@${HANDLE}/videos`, {
+    headers: { 'User-Agent': BROWSER_UA, 'Accept-Language': 'en' },
+    signal: AbortSignal.timeout(6000),
+  });
+  if (!res.ok) return null;
+  const page = await res.text();
+  const at = page.indexOf('"richItemRenderer":');
+  if (at < 0) return null;
+  const chunk = page.slice(at, at + 12000);
+  const id = chunk.match(/"contentId":"([A-Za-z0-9_-]{11})"|"videoId":"([A-Za-z0-9_-]{11})"/);
+  const vid = id?.[1] ?? id?.[2];
+  if (!vid) return null;
+  const t = chunk.match(/"title":\{"content":"((?:[^"\\]|\\.)*)"|"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/);
+  const raw = t?.[1] ?? t?.[2];
+  let entryTitle: string | undefined;
+  if (raw) {
+    try {
+      entryTitle = JSON.parse(`"${raw}"`);
+    } catch {
+      entryTitle = raw;
     }
-  } catch {
-    // Graceful fallback if offline or during timeout
+  }
+  return { id: vid, title: entryTitle };
+}
+
+if (!videoId) {
+  for (const source of [fromFeed, fromVideosTab]) {
+    try {
+      const found = await source();
+      if (found) {
+        videoId = found.id;
+        if (!title && found.title) title = found.title;
+        break;
+      }
+    } catch {
+      // Offline or timed out: try the next source, then the fallback.
+    }
   }
 }
 
