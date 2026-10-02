@@ -36,3 +36,6 @@ host-media/*
 Sample Photography/
 untitled folder/
 new_media/
+
+# Codex CLI local config (contains API keys)
+.codex/
