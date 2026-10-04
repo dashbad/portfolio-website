@@ -11,6 +11,8 @@ interface Props {
   image?: string;
   /** Remove the top padding that clears the fixed navbar (full-bleed heroes). */
   flush?: boolean;
+  /** Keep the page out of search engines (for unlisted pages). */
+  noindex?: boolean;
 }
 
 const SITE_NAME = 'dashbad';
@@ -22,7 +24,7 @@ const NAV = [
   { href: '/about', label: 'About' },
 ];
 
-const { title, description = DEFAULT_DESCRIPTION, image, flush = false } = Astro.props;
+const { title, description = DEFAULT_DESCRIPTION, image, flush = false, noindex = false } = Astro.props;
 const pageTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME}`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const ogImage = image && Astro.site ? new URL(image, Astro.site).toString() : image;
@@ -39,6 +41,7 @@ const footerLinks = SOCIALS.map(({ label, href }) => ({ label, href }));
     <meta name="description" content={description} />
     <meta name="theme-color" content="#171717" />
     <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:site_name" content={SITE_NAME} />

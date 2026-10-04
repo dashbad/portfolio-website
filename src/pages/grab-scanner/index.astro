@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Grab Scanner" description="A private household tool that summarises Grab receipts." noindex>
+  <section class="mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-14">
+    <div class="prose-body">
+      <h1>Grab Scanner</h1>
+      <p>
+        Grab Scanner is a small private tool I wrote for my own household. It reads the Grab e-receipts
+        (rides, GrabFood and GrabMart) in the Gmail accounts of family members who have chosen to connect,
+        and turns them into a spending summary that only we can see.
+      </p>
+      <p>
+        It is not a public service: only a handful of named Google accounts can sign in. It runs on my own
+        computer and asks Google for read-only access.
+      </p>
+      <p>
+        See the <a href="/grab-scanner/privacy">privacy policy</a> for exactly what data it touches and what
+        happens to it.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
