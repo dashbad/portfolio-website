@@ -41,9 +41,17 @@ const specItems = (
 
 <BaseLayout title={title} description={summary} image={heroTile ?? heroPoster ?? undefined}>
   <article>
-    <Hero07 tagline={String(year)} title={title} description={summary} landscapeImage={heroPoster ?? undefined} landscapeAlt={title}>
-      {heroVideo && <VideoPlayer src={heroVideo} poster={heroPoster ?? undefined} mode="ambient" title={`${title} — ambient loop`} aspect="21 / 9" />}
-    </Hero07>
+    {/* Only pass children when there is a video: an empty slot still counts as
+        children and would suppress Hero07's poster-image fallback. */}
+    {
+      heroVideo ? (
+        <Hero07 tagline={String(year)} title={title} description={summary}>
+          <VideoPlayer src={heroVideo} poster={heroPoster ?? undefined} mode="ambient" title={`${title} — ambient loop`} aspect="21 / 9" />
+        </Hero07>
+      ) : (
+        <Hero07 tagline={String(year)} title={title} description={summary} landscapeImage={heroPoster ?? undefined} landscapeAlt={title} />
+      )
+    }
 
     <div class="mx-auto max-w-7xl px-6 sm:px-10">
       <div class="prose-body mb-12 max-w-3xl [&:empty]:hidden">
