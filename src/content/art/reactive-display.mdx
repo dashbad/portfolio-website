@@ -1,0 +1,50 @@
+---
+title: Reactive Display
+year: 2026
+order: -1
+summary: |-
+  This piece was a way for me to learn how to drive Hub75 LED panels as well as get to grips with TouchDesigner. 
+
+  While I have been learning TouchDesigner it has quite a steep learning curve, and I have to give full disclosure that I used a TD MCP server to help build out the software side of this. Ultimately still a rewarding project and the time saved by using AI is undeniable
+
+  I initially attempted to use an ESP32 to drive the panel but it wasn't able to maintain a strong enough wifi connection to get a decent framerate. The Pi was already running the camera so I decided to move everything over to the Pi. It is sending the camera feed to a Mac running TouchDesigner in another part of the house, which is doing the processing and sending the feed back to the Pi for displaying. There is some latency, but it is more than manageable for these effects.
+
+  There are 4 effects (again - the power of AI)
+  1. Finger tracking
+  2. Hand tracking
+  3. Head tracking
+  4. Body silhouette tracking
+
+  All in all quite a fun project, and now I have a pipeline set up by which I can iterate and drive all kinds of other effects. Audio reactivity is next on the list.
+heroVideo: /media/art/reactive-display/hero-loop.mp4?v=1
+heroPoster: /media/art/reactive-display/poster.jpg?v=1
+heroTile: /media/art/reactive-display/tile.jpg?v=2
+video: /media/art/reactive-display/how-it-works.mp4?v=1
+videoPoster: /media/art/reactive-display/how-it-works.jpg?v=1
+specs:
+  dimensions: 400x400mm
+  controller: Raspberry Pi4 for video capture and display. FX created with TouchDesigner
+  power: 5V 6A DC power supply.
+  illumination: 128x128 Hub75 LED Panel
+  materials:
+    - Frame is PLA
+gallery:
+  - src: /media/art/reactive-display/model-1.jpg
+    alt: 3D Model, frame
+    fieldGroup: galleryImage
+  - src: /media/art/reactive-display/model-2.jpg
+    alt: 3D Model, rear mounts
+    fieldGroup: galleryImage
+  - src: /media/art/reactive-display/build-1.jpg
+    alt: LED panels wired into the frame
+    fieldGroup: galleryImage
+  - src: /media/art/reactive-display/build-2.jpg
+    alt: Raspberry Pi and controls added
+    fieldGroup: galleryImage
+  - src: /media/art/reactive-display/build-3.jpg
+    alt: Finished wiring with the control knobs
+    fieldGroup: galleryImage
+  - src: /media/art/reactive-display/touchdesigner.png
+    alt: TouchDesigner project
+    fieldGroup: galleryImage
+---

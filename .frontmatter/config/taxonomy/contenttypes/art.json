@@ -22,6 +22,15 @@
       "required": false
     },
     { "title": "Hero poster", "name": "heroPoster", "type": "image", "isPreviewImage": true, "required": false },
+    { "title": "Tile (4:3)", "name": "heroTile", "type": "image", "required": false },
+    {
+      "title": "Video (with controls)",
+      "name": "video",
+      "type": "file",
+      "fileExtensions": ["mp4", "webm", "mov"],
+      "required": false
+    },
+    { "title": "Video poster", "name": "videoPoster", "type": "image", "required": false },
     {
       "title": "Specifications",
       "name": "specs",

@@ -34,6 +34,9 @@ const art = defineCollection({
     heroPoster: mediaPath.nullable().optional(),
     /** 4:3 still for the art index tile and social previews; falls back to heroPoster. */
     heroTile: mediaPath.nullable().optional(),
+    /** Optional longer video with play controls, shown between the text and the gallery. */
+    video: mediaPath.nullable().optional(),
+    videoPoster: mediaPath.nullable().optional(),
     specs: z.object({
       dimensions: z.string().optional(),
       controller: z.string().optional(),
