@@ -18,6 +18,11 @@ interface Props {
 const SITE_NAME = 'dashbad';
 const DEFAULT_DESCRIPTION = 'dashbad — Portfolio';
 
+// Umami analytics, self-hosted on labyrinth at stats.dashbad.com. Set the ID
+// from Umami → Settings → Websites. `data-domains` keeps dev/preview visits
+// from being counted.
+const UMAMI_WEBSITE_ID = 'f7472494-a1a5-40c5-99ff-a60f89a1db5a';
+
 const NAV = [
   { href: '/art', label: 'Art' },
   { href: '/music', label: 'Music' },
@@ -50,6 +55,15 @@ const footerLinks = SOCIALS.map(({ label, href }) => ({ label, href }));
     <meta property="og:description" content={description} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    {UMAMI_WEBSITE_ID && (
+      <script
+        is:inline
+        defer
+        src="https://stats.dashbad.com/script.js"
+        data-website-id={UMAMI_WEBSITE_ID}
+        data-domains="dashbad.com,www.dashbad.com"
+      ></script>
+    )}
   </head>
   <body class="flex min-h-screen flex-col">
     <a href="#main" class="skip-link">Skip to content</a>
