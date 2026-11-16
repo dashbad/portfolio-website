@@ -1,13 +1,14 @@
 # dashbad — Portfolio
 
 Personal portfolio website. Built with **Astro 7**, **Tailwind CSS 4**, **React** (islands only), **MDX** and
-**TypeScript**, served in production by **Caddy 2** with heavy media mounted from the host.
+**TypeScript**, hosted on **Firebase Hosting** (project `dashbad-portfolio`) at dashbad.com.
 
 ```bash
 npm install
 npm run dev        # http://localhost:4321
 npm run build      # static output → dist/
 npm run check      # astro type-check
+npm run deploy     # build + firebase deploy --only hosting
 ```
 
 Requires Node ≥ 22.12.
@@ -27,8 +28,8 @@ src/
   lib/utils.ts     `cn()` class helper used by the React components
   pages/           /, /art, /art/[slug], /music, /about, 404
   styles/global.css  shadcn/ui design tokens + prose styles
-public/media/      Local-only media (git-ignored, docker-ignored)
-host-media/        Production media mount (git-ignored, docker-ignored)
+public/media/      Project media (git-ignored; ships with each deploy)
+firebase.json      Hosting config: serves dist/, cache headers, trailing slashes
 ```
 
 ## Design system
@@ -46,12 +47,11 @@ React is pinned to 19.2 because React Three Fiber's peer range excludes 19.3.
 
 ## Media strategy
 
-All media is referenced by `/media/...` paths and is **never** part of the repo or the Docker
-image.
+All media is referenced by `/media/...` paths and is **never** committed to the repo.
 
-- **Local:** drop files in `public/media/...` — `astro dev` serves them at `/media/...`.
-- **Production:** put the same tree in `host-media/`. `docker-compose.yml` bind-mounts it to
-  `/usr/share/caddy/media` and the `Caddyfile` routes every `/media/*` request there.
+- Drop files in `public/media/...`. `astro dev` serves them at `/media/...`, and the build copies
+  them into `dist/`, so they ship to Firebase with every deploy (only changed files upload).
+- Because media isn't in git, deploys run from the machine that has it, not from CI.
 
 If a file is missing the components render a styled "media offline" placeholder rather than a
 broken element, so the site stays presentable while media is being produced.
@@ -74,10 +74,18 @@ scripts/hero-media.sh photo ~/Downloads/PXL_20260920_203100.jpg public/media/art
 
 Shoot video with the Pixel's 10-bit HDR video switched off; `--help` lists every option.
 
+## Deploying
+
 ```bash
-docker compose build
-docker compose up -d     # http://localhost:8080
+npm run deploy
 ```
+
+Builds the site and runs `firebase deploy --only hosting`. Needs the Firebase CLI logged in
+(`npx firebase login`) and `public/media` present. Earlier releases can be rolled back from the
+Firebase console (Hosting → release history).
+
+DNS is on Cloudflare: `dashbad.com` and `www` point at Firebase; other subdomains go to the home
+server via `home.dashbad.com`.
 
 ## Authoring with Front Matter CMS
 
@@ -86,7 +94,7 @@ Install the recommended VS Code extensions (`.vscode/extensions.json`). Front Ma
 field groups) and the split config under `.frontmatter/config/` (page folders, content types).
 
 - The public folder is set to `public`, so image/file pickers resolve to `public/media/...`
-  and write `/media/...` paths — matching what Caddy serves in production.
+  and write `/media/...` paths — matching what Firebase serves in production.
 - Pasted images land in `public/media`.
 - Art entries get `title`, `category` (taxonomy), `year`, hero video/poster, `specs`
   (nested fields), a `gallery` block and sort/draft flags. Music entries take the raw

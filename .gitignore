@@ -22,9 +22,6 @@ pnpm-debug.log*
 public/media/*
 !public/media/.gitkeep
 !public/media/README.md
-host-media/*
-!host-media/.gitkeep
-!host-media/README.md
 
 # Front Matter CMS local cache/database
 .frontmatter/database/
