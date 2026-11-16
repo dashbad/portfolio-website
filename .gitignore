@@ -39,3 +39,6 @@ new_media/
 
 # Codex CLI local config (contains API keys)
 .codex/
+
+# Firebase CLI cache
+.firebase/

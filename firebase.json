@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "public": "dist",
+    "trailingSlash": true,
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "media/README.md"],
+    "headers": [
+      {
+        "source": "/_astro/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      },
+      {
+        "source": "/media/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+      }
+    ]
+  }
+}

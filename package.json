@@ -16,7 +16,8 @@
     "astro": "astro",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "deploy": "astro build && firebase deploy --only hosting"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",
@@ -39,6 +40,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
+    "firebase-tools": "^15.36.0",
     "typescript": "^5.9.3"
   }
 }
